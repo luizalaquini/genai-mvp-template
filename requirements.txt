@@ -1,0 +1,20 @@
+# Data
+numpy
+pandas
+
+# ML (opcional, mas comum)
+scikit-learn
+
+# GenAI (ajuste conforme provedor)
+openai
+
+# Utilidades
+tqdm
+python-dotenv
+
+# Logging e organização
+loguru
+pydantic
+
+# HTTP (caso vá integrar APIs)
+requests
