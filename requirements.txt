@@ -1,20 +1,18 @@
-# Data
-numpy
-pandas
-
-# ML (opcional, mas comum)
-scikit-learn
-
-# GenAI (ajuste conforme provedor)
-openai
-
-# Utilidades
-tqdm
+# Core
 python-dotenv
-
-# Logging e organização
-loguru
 pydantic
+pyyaml
 
-# HTTP (caso vá integrar APIs)
+# GenAI / LLMs
+langchain
+langgraph
+
+# Utilities
+tqdm
+loguru
+
+# Testing
+pytest
+
+# APIs 
 requests
