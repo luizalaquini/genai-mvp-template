@@ -55,8 +55,8 @@ genai-mvp-template/
 ### Prerequisites
 
 - Python 3.10+
-- Anthropic Claude account
-- Your Claude API key
+- Anthropic Claude account - or other provider
+- Your Claude API key - or other provider
 
 ### 1. Environment Setup
 
