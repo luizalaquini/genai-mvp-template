@@ -1,6 +1,12 @@
 import sys
 sys.path.append("..")
-from src.core.chains.base_chain import SimpleChain
+from anthropic import Anthropic
+from src.core.chains.base_chain import run_chain
 
-chain = SimpleChain()
-chain.run("Qual a capital do Brasil?")
+client = Anthropic()
+response = run_chain(
+    user_input="Qual a capital do Brasil?",
+    model_client=client,
+    variables={"domain": "geografia"}
+)
+print(response)

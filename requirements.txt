@@ -4,6 +4,7 @@ pydantic
 pyyaml
 
 # GenAI / LLMs
+anthropic
 langchain
 langgraph
 
