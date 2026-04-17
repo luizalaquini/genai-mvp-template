@@ -20,7 +20,7 @@ genai-mvp-template/
 │   │   │   ├── registry.py            # Central tool registry
 │   │   │   └── README.md
 │   │   ├── prompts/          # Versioned prompt templates
-│   │   │   ├── base_prompt.txt
+│   │   │   ├── base_prompt_v1.0.txt
 │   │   │   └── README.md
 │   │   └── guardrails/       # Validation and safety
 │   │       ├── input_guard.py         # Input validation
@@ -32,19 +32,16 @@ genai-mvp-template/
 │   ├── app.py               # Main app
 │   ├── config.py            # Global configuration
 │   └── main.py
-├── tests/
+├── tests/                   # Automated tests
 │   └── test_agent.py
 ├── data/
 │   ├── raw/                 # Raw data
 │   └── processed/           # Processed data
 ├── docs/
-│   ├── architecture.md      # Architecture decisions
+│   ├── architecture.md      # Architecture detailing
 │   ├── contributing.md      # Contribution guide
-│   ├── decisions.md         # ADRs (Architecture Decision Records)
-│   ├── technical-documentation.md
-│   ├── prompts_strategy.md
-│   ├── scope.md
-│   └── README.md
+│   ├── decisions.md         # ADRs (Architecture Decision Records) and other decisions (business, etc.)
+│   └── scope.md             # What is included and what is not included
 ├── logs/                    # Execution logs
 ├── playground/              # Prototyping and tests
 │   └── test_chain.py
@@ -196,7 +193,7 @@ response = agent.run("What is the price of the XYZ laptop?")
 ### Customize the Prompt
 
 ```python
-# Edit src/core/prompts/base_prompt.txt
+# Edit src/core/prompts/base_prompt_v1.0.txt
 response = run_chain(
     user_input="your question",
     model_client=client,
@@ -439,10 +436,10 @@ pytest tests/test_agent.py -v
 
 - **[docs/architecture.md](docs/architecture.md)** - Architecture overview
 - **[docs/contributing.md](docs/contributing.md)** - Contribution guide
-- **[docs/decisions.md](docs/decisions.md)** - ADRs
+- **[docs/decisions.md](docs/decisions.md)** - ADRs (Architecture Decision Records) and other decisions (business, etc.)
 - **[docs/scope.md](docs/scope.md)** - Project scope
 - **[docs/technical-documentation.md](docs/technical-documentation.md)** - Technical reference
-- **[docs/prompts_strategy.md](docs/prompts_strategy.md)** - Prompt strategy
+- **[src/core/prompts/README.md](src/core/prompts/README.md)** - Prompt strategy
 
 ## Next Steps
 
@@ -639,10 +636,10 @@ For more details on each component, see:
 
 - **[docs/architecture.md](docs/architecture.md)** - Decisions and patterns
 - **[docs/contributing.md](docs/contributing.md)** - Contribution guide
-- **[docs/decisions.md](docs/decisions.md)** - ADRs (Architecture Decision Records)
+- **[docs/decisions.md](docs/decisions.md)** - ADRs (Architecture Decision Records) and other decisions (business, etc.)
 - **[docs/scope.md](docs/scope.md)** - Project scope
 - **[docs/technical-documentation.md](docs/technical-documentation.md)** - Technical reference
-- **[docs/prompts_strategy.md](docs/prompts_strategy.md)** - Prompt strategy
+- **[src/core/prompts/README.md](src/core/prompts/README.md)** - Prompt strategy
 
 ## Next Steps
 
