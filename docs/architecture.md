@@ -1,6 +1,6 @@
-# Arquitetura
+# Architecture
 
-## Visao geral
+## Overview
 
 ```
 User
@@ -9,37 +9,37 @@ User
 API (FastAPI)
  |
  v
-InputGuard  <-- valida e sanitiza
+InputGuard  <-- validate and sanitize
  |
  v
-BaseAgent (loop ReAct)
- |-- Memory (contexto da conversa)
- |-- Tools (acoes no mundo externo)
- |-- LLM (raciocinio)
+BaseAgent (ReAct loop)
+ |-- Memory (conversation context)
+ |-- Tools (external actions)
+ |-- LLM (reasoning)
  |
  v
-OutputGuard <-- valida resposta
+OutputGuard <-- validate response
  |
  v
 User
 ```
 
-## Loop do agente (ReAct)
+## Agent Loop (ReAct)
 
-1. **Reason** — LLM raciocina sobre a tarefa e decide qual tool usar
-2. **Act** — Executa a tool
-3. **Observe** — Recebe o resultado e adiciona na memoria
-4. Repete ate `stop_reason == end_turn` ou `max_iterations`
+1. **Reason** — LLM reasons about the task and decides which tool to use
+2. **Act** — Execute the tool
+3. **Observe** — Receive the result and add it to memory
+4. Repeat until `stop_reason == end_turn` or `max_iterations`
 
-## Decisoes tecnicas
+## Technical Decisions
 
-| Decisao | Escolha | Motivo |
+| Decision | Choice | Why |
 |---------|---------|--------|
-| Padrao de agente | ReAct | Simples, auditavel, funciona bem com Claude |
-| Memoria | Buffer (sliding window) | Zero dependencias no MVP |
-| Registro de tools | Dict central | Facil adicionar/remover tools |
-| Guardrails | Funcoes puras | Testavel e sem overhead |
+| Agent pattern | ReAct | Simple, auditable, works well with Claude |
+| Memory | Buffer (sliding window) | Zero dependencies for MVP |
+| Tool registry | Central dict | Easy to add/remove tools |
+| Guardrails | Pure functions | Testable and low overhead |
 
 ## ADRs
 
-Adicione decisoes relevantes: `docs/adr-001-escolha-memoria.md`
+Add relevant decisions: `docs/adr-001-memory-choice.md`

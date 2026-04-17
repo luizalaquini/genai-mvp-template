@@ -1,86 +1,86 @@
-# Agents - Agentes Autônomos
+# Agents - Autonomous Agents
 
-Agentes que raciocinam sobre tarefas e executam ações de forma autônoma usando **loop ReAct** (Reason + Act).
+Agents that reason about tasks and execute actions autonomously using the **ReAct loop** (Reason + Act).
 
-## Arquitetura
+## Architecture
 
 ```
 Task Input
     ↓
-[REASON] - Raciocinar qual ação tomar
+[REASON] - Decide which action to take
     ↓
-[ACT] - Executar ferramenta ou responder
+[ACT] - Execute a tool or respond
     ↓
-[OBSERVE] - Ver resultado
+[OBSERVE] - Observe the result
     ↓
-Repete até conclusão ou max_iterations
+Repeat until completion or max_iterations
     ↓
 Final Response
 ```
 
-## Fluxo de um Agent
+## Agent Flow
 
-1. **Recebe uma task** do usuário (validada via `input_guard`)
-2. **Raciocina** qual ferramenta usar (ou responde direto)
-3. **Executa a ferramenta** consultando o `TOOL_REGISTRY`
-4. **Observa o resultado** e adiciona à memória
-5. **Repete** até terminar ou atingir limite de iterações
-6. **Retorna resposta final** (validada via `output_guard`)
+1. **Receives a task** from the user (validated via `input_guard`)
+2. **Reasons** about which tool to use (or answers directly)
+3. **Executes the tool** by checking `TOOL_REGISTRY`
+4. **Observes the result** and adds it to memory
+5. **Repeats** until finished or the iteration limit is reached
+6. **Returns final response** (validated via `output_guard`)
 
-## BaseAgent - Exemplo de Uso
+## BaseAgent - Example Usage
 
 ```python
 from anthropic import Anthropic
 from src.core.agents.base_agent import BaseAgent
 
-# Inicializar cliente de IA
+# Initialize AI client
 client = Anthropic()
 
-# Criar agente com até 10 iterações
+# Create an agent with up to 10 iterations
 agent = BaseAgent(model_client=client, max_iterations=10)
 
-# Executar tarefa
-response = agent.run("Qual é a capital do Brasil e quantos habitantes tem?")
+# Execute a task
+response = agent.run("What is the capital of Brazil and how many inhabitants does it have?")
 print(response)
 ```
 
-## Componentes Principais
+## Main Components
 
 ### BaseAgent
 
-**Responsabilidades:**
-- Gerenciar o loop ReAct
-- Validar entrada e saída
-- Manter memória da conversa
-- Executar ferramentas dinamicamente
+**Responsibilities:**
+- Manage the ReAct loop
+- Validate input and output
+- Maintain conversation memory
+- Execute tools dynamically
 
-**Atributos:**
-- `client`: Cliente de IA (ex: Anthropic)
-- `max_iterations`: Limite de tentativas (padrão: 10)
-- `memory`: Contexto da conversa (ConversationMemory)
+**Attributes:**
+- `client`: AI client (e.g. Anthropic)
+- `max_iterations`: Iteration limit (default: 10)
+- `memory`: Conversation context (ConversationMemory)
 
-**Métodos:**
-- `run(task: str) -> str`: Executa a tarefa e retorna resposta
-- `_execute_tool(name, inputs)`: Executa ferramenta do registro
-- `_system_prompt()`: Retorna prompt do sistema para o modelo
+**Methods:**
+- `run(task: str) -> str`: Execute the task and return the response
+- `_execute_tool(name, inputs)`: Execute a tool from the registry
+- `_system_prompt()`: Return the system prompt for the model
 
-### Integração com Outros Componentes
+### Integration with Other Components
 
 ```
 Agent
 ├── Memory (ConversationMemory)
-│   └── Mantém contexto recente
+│   └── Keeps recent context
 ├── Tools (TOOL_REGISTRY)
-│   └── Ferramentas disponíveis
+│   └── Available tools
 ├── Prompts (system_prompt)
-│   └── Instruções para o modelo
+│   └── Instructions for the model
 ├── Input Guard
-│   └── Valida entrada do usuário
+│   └── Validates user input
 └── Output Guard
-    └── Valida resposta final
+    └── Validates final response
 ```
 
-## Criando Seu Próprio Agent
+## Creating Your Own Agent
 
 ```python
 from src.core.agents.base_agent import BaseAgent
@@ -88,20 +88,20 @@ from src.core.memory.short_term import ConversationMemory
 from src.core.memory.long_term import LongTermMemory
 
 class CustomAgent(BaseAgent):
-    """Agent customizado com memória de longo prazo."""
+    """Custom agent with long-term memory."""
     
     def __init__(self, model_client, max_iterations=10):
         super().__init__(model_client, max_iterations)
         self.long_term_memory = LongTermMemory(collection_name="custom_agent")
     
     def run(self, task: str) -> str:
-        # 1. Recuperar contexto relevante do histórico
+        # 1. Retrieve relevant history
         relevant_context = self.long_term_memory.retrieve_by_topic("general")
         
-        # 2. Executar agent normalmente
+        # 2. Run the agent normally
         response = super().run(task)
         
-        # 3. Se conversa atingiu limite, armazenar resumo
+        # 3. If the conversation reaches the limit, store a summary
         if len(self.memory) >= 20:
             summary = self._summarize_conversation()
             self.long_term_memory.store(
@@ -113,24 +113,24 @@ class CustomAgent(BaseAgent):
         return response
     
     def _summarize_conversation(self) -> str:
-        """Resumir conversa para armazenar em LongTermMemory."""
+        """Summarize the conversation for LongTermMemory."""
         messages = self.memory.get_all()
-        # Aqui você chamaria um LLM para gerar o resumo
-        return "Resumo da conversa..."
+        # Here you would call an LLM to generate the summary
+        return "Conversation summary..."
 ```
 
-## Adicionando Novas Ferramentas
+## Adding New Tools
 
-1. Implementar a função em `src/core/tools/example_tools.py`
-2. Registrar em `src/core/tools/registry.py`
-3. Agent usa automaticamente
+1. Implement the function in `src/core/tools/example_tools.py`
+2. Register it in `src/core/tools/registry.py`
+3. The agent will use it automatically
 
-Exemplo:
+Example:
 
 ```python
 # src/core/tools/example_tools.py
 def calculate_sum(a: int, b: int) -> int:
-    """Calcula a soma de dois números."""
+    """Calculates the sum of two numbers."""
     return a + b
 
 # src/core/tools/registry.py
@@ -138,13 +138,12 @@ from src.core.tools.example_tools import calculate_sum
 
 TOOL_REGISTRY = {
     "calculate_sum": calculate_sum,
-    # ... outros tools
 }
 
 TOOL_DEFINITIONS = [
     {
         "name": "calculate_sum",
-        "description": "Calcula a soma de dois números",
+        "description": "Calculates the sum of two numbers",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -153,76 +152,75 @@ TOOL_DEFINITIONS = [
             },
             "required": ["a", "b"]
         }
-    },
-    # ... outros tools
+    }
 ]
 ```
 
-## Padrões de Uso
+## Usage Patterns
 
-### Pattern 1: Agent Simples (MVP)
+### Pattern 1: Simple Agent (MVP)
 
 ```python
 agent = BaseAgent(client)
-response = agent.run("sua tarefa")
+response = agent.run("your task")
 ```
 
-### Pattern 2: Agent com Contexto Persistente
+### Pattern 2: Agent with Persistent Context
 
 ```python
 agent = CustomAgent(client)
-# Primeira conversa
-response1 = agent.run("Aprenda que gosto de data science")
-# Segunda conversa - acessa contexto da primeira
-response2 = agent.run("Recomende um tópico para estudar")
+# First conversation
+response1 = agent.run("Learn that I like data science")
+# Second conversation - access first conversation context
+response2 = agent.run("Recommend a topic to study")
 ```
 
-### Pattern 3: Agent com Validações Customizadas
+### Pattern 3: Agent with Custom Validation
 
 ```python
 class SecureAgent(BaseAgent):
     def run(self, task: str) -> str:
-        # Validações customizadas
+        # Custom validation
         if len(task) > 1000:
-            raise ValueError("Tarefa muito longa")
+            raise ValueError("Task is too long")
         return super().run(task)
 ```
 
-## Configuração Avançada
+## Advanced Configuration
 
-### Ajustar Model e Max Tokens
+### Adjust Model and Max Tokens
 
 ```python
-# Modificar _system_prompt para usar modelo diferente
+# Override _system_prompt to use a different model
 class AgentWithGPT(BaseAgent):
     def run(self, task: str) -> str:
-        # Lógica customizada aqui
+        # Custom logic here
         pass
 ```
 
-### Controlar Iterações
+### Control Iterations
 
 ```python
-# Agent mais "preguiçoso" - menos iterações
+# Less aggressive agent - fewer iterations
 agent = BaseAgent(client, max_iterations=3)
 
-# Agent mais "agressivo" - mais iterações
+# More aggressive agent - more iterations
 agent = BaseAgent(client, max_iterations=20)
 ```
 
 ## Troubleshooting
 
-| Problema | Causa | Solução |
+| Problem | Cause | Fix |
 |----------|-------|---------|
-| Agent não encontra ferramenta | Tool não registrada | Verificar `TOOL_REGISTRY` |
-| Resposta incompleta | Limite de iterações muito baixo | Aumentar `max_iterations` |
-| Loops infinitos | Tool chama a si mesma | Revisar lógica da tool |
-| Erro de validação | Input/output não passa em guard | Revisar regras de guardrails |
+| Agent cannot find tool | Tool not registered | Check `TOOL_REGISTRY` |
+| Incomplete response | Iteration limit too low | Increase `max_iterations` |
+| Infinite loops | Tool calls itself | Review tool logic |
+| Validation error | Input/output fails guard | Review guardrail rules |
 
-## Próximos Passos
+## Next Steps
 
-- [ ] Implementar mais ferramentas em `src/core/tools/`
-- [ ] Criar agents customizados para casos específicos
-- [ ] Integrar com LongTermMemory para aprendizado
-- [ ] Adicionar validações customizadas via guardrails
-- [ ] Implementar logging e monitoramento
+- [ ] Implement more tools in `src/core/tools/`
+- [ ] Build custom agents for specific use cases
+- [ ] Integrate with LongTermMemory for learning
+- [ ] Add custom validation with guardrails
+- [ ] Implement logging and monitoring

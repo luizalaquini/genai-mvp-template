@@ -1,166 +1,166 @@
 # Memory
 
-## Tipos disponíveis
+## Available Types
 
-### Arquitetura de Memória (Recomendado)
+### Memory Architecture (Recommended)
 
 ```
 User Message
      ↓
-ConversationMemory (curto prazo - últimas 20 msgs)
-     ↓ (quando atinge limite)
-Resumir com LLM
+ConversationMemory (short-term - last 20 messages)
+     ↓ (when limit is reached)
+Summarize with LLM
      ↓
-LongTermMemory (longo prazo - persistente)
-     ↓ (busca semântica)
-Próxima Conversa (contexto enriquecido)
+LongTermMemory (long-term - persistent)
+     ↓ (semantic search)
+Next Conversation (enriched context)
 ```
 
-**Três camadas de memória:**
-1. **BufferMemory**: Janela simples (deprecated em favor de ConversationMemory)
-2. **ConversationMemory**: Contexto recente e imediato
-3. **LongTermMemory**: Histórico, aprendizados e contexto enriquecido
+**Three memory layers:**
+1. **BufferMemory**: Simple sliding window (deprecated in favor of ConversationMemory)
+2. **ConversationMemory**: Immediate recent context
+3. **LongTermMemory**: History, learnings, and enriched context
 
 ---
 
 ### BufferMemory (`buffer_memory.py`)
-Janela deslizante de mensagens com API genérica. Simples e suficiente para a maioria dos MVPs.
+Sliding window of messages with a generic API. Simple and suitable for most MVPs.
 
-**Características:**
-- Estrutura de dados: lista Python
-- Limite: últimas N mensagens (padrão: 20)
-- Método único `add()` para todos os tipos de mensagem
-- Gerenciamento manual de limite com slicing
+**Features:**
+- Data structure: Python list
+- Limit: last N messages (default: 20)
+- Single `add()` method for all message types
+- Manual limit management using slicing
 
-**Quando usar:** Casos simples onde você adiciona mensagens de forma homogênea
+**When to use:** Simple cases where you add messages homogeneously
 
 ---
 
 ### ConversationMemory (`short_term.py`)
-Buffer circular com API específica por tipo de mensagem. Oferece mais controle e clareza nos tipos de role.
+Circular buffer with a message-type-specific API. Provides better control and clearer role handling.
 
-**Características:**
-- Estrutura de dados: `deque` (fila circular)
-- Limite: últimas N mensagens (padrão: 20) - **automático**
-- Métodos específicos: `add_user_message()`, `add_assistant_message()`, `add_system_message()`
-- Funcionalidades extras: `get_last_n(n)` para recuperar apenas as últimas N mensagens
-- Gerenciamento automático de limite via `maxlen` do deque
+**Features:**
+- Data structure: `deque` (circular queue)
+- Limit: last N messages (default: 20) - **automatic**
+- Specific methods: `add_user_message()`, `add_assistant_message()`, `add_system_message()`
+- Extra convenience: `get_last_n(n)` to retrieve the last N messages only
+- Automatic limit management via `deque(maxlen)`
 
-**Quando usar:** Quando você quer diferenciação clara de tipos de mensagem e performance otimizada
+**When to use:** When you want clear message role differentiation and optimized performance
 
 ---
 
 ### LongTermMemory (`long_term.py`)
-Armazenamento persistente de memórias com busca e gerenciamento de metadados.
+Persistent memory storage with metadata management and semantic-style retrieval.
 
-**Características:**
-- Armazenamento persistente com timestamps
-- Metadados associados (tópico, importância, etc)
-- Múltiplas estratégias de recuperação
-- Rastreamento de acessos (relevância)
-- Suporta integração com vector databases (ChromaDB, Pinecone)
+**Features:**
+- Persistent storage with timestamps
+- Associated metadata (topic, importance, etc.)
+- Multiple retrieval strategies
+- Access tracking for relevance
+- Supports integration with vector databases (ChromaDB, Pinecone)
 
-**Métodos principais:**
-- `store(content, metadata)` - Armazena uma memória
-- `retrieve_by_topic(topic)` - Busca por tópico
-- `retrieve_recent(n)` - Últimas N memórias
-- `retrieve_most_accessed(n)` - Memórias mais relevantes
-- `update_memory(id, content)` - Atualiza uma memória
-- `delete_memory(id)` - Deleta uma memória
-- `get_stats()` - Estatísticas de uso
+**Main methods:**
+- `store(content, metadata)` - Store a memory entry
+- `retrieve_by_topic(topic)` - Retrieve memories by topic
+- `retrieve_recent(n)` - Get the most recent N memories
+- `retrieve_most_accessed(n)` - Get the most accessed memories
+- `update_memory(id, content)` - Update a memory entry
+- `delete_memory(id)` - Delete a memory entry
+- `get_stats()` - Return usage statistics
 
-**Quando usar:** Para armazenar resumos de conversas, contexto importante e aprendizados do agente
+**When to use:** Store conversation summaries, important context, and agent learnings
 
 ---
 
-## Comparativo Detalhado
+## Detailed Comparison
 
-| Aspecto | BufferMemory | ConversationMemory | LongTermMemory |
+| Aspect | BufferMemory | ConversationMemory | LongTermMemory |
 |---------|--------------|-------------------|----------------|
-| **Estrutura** | `list` | `deque(maxlen=N)` | `list` (com timestamps) |
-| **Scope** | Sessão atual | Sessão atual | Persistente |
-| **Capacidade** | ~20-50 msgs | ~20-100 msgs | Ilimitada |
-| **API** | Genérica (`add()`) | Específica por role | Por tipo de armazenamento |
-| **Metadados** | Não | Não | Sim (rich metadata) |
-| **Acesso** | FIFO | FIFO | By-topic, by-recency, by-access |
-| **Busca** | Não | Não | Sim (simples + semântica) |
-| **Melhor para** | Casos simples | Conversas recentes | Histórico e contexto |
+| **Structure** | `list` | `deque(maxlen=N)` | `list` (with timestamps) |
+| **Scope** | Current session | Current session | Persistent |
+| **Capacity** | ~20-50 msgs | ~20-100 msgs | Unlimited |
+| **API** | Generic (`add()`) | Role-specific | Storage-specific |
+| **Metadata** | No | No | Yes (rich metadata) |
+| **Access** | FIFO | FIFO | By-topic, recency, access |
+| **Search** | No | No | Yes (simple + semantic) |
+| **Best for** | Simple cases | Recent conversations | History and context |
 
 ---
 
-## Guia de Utilização
+## Usage Guide
 
-### BufferMemory - Exemplo Básico
+### BufferMemory - Basic Example
 
 ```python
 from src.core.memory.buffer_memory import BufferMemory
 
-# Inicializar com limite padrão (20 mensagens)
+# Initialize with the default limit (20 messages)
 memory = BufferMemory()
 
-# Ou com limite customizado
+# Or with a custom limit
 memory = BufferMemory(max_messages=50)
 
-# Adicionar mensagens (genérico)
-memory.add("user", "Olá, como você está?")
-memory.add("assistant", "Estou bem, obrigado!")
-memory.add("system", "Contexto do sistema")
+# Add messages (generic)
+memory.add("user", "Hello, how are you?")
+memory.add("assistant", "I'm good, thank you!")
+memory.add("system", "System context")
 
-# Recuperar todas as mensagens
+# Retrieve all messages
 messages = memory.get_messages()
-# Resultado: [
-#     {"role": "user", "content": "Olá, como você está?"},
-#     {"role": "assistant", "content": "Estou bem, obrigado!"},
-#     {"role": "system", "content": "Contexto do sistema"}
+# Result: [
+#     {"role": "user", "content": "Hello, how are you?"},
+#     {"role": "assistant", "content": "I'm good, thank you!"},
+#     {"role": "system", "content": "System context"}
 # ]
 
-# Verificar quantidade de mensagens
+# Check message count
 print(len(memory))  # 3
 
-# Limpar histórico
+# Clear history
 memory.clear()
 ```
 
 ---
 
-### ConversationMemory - Exemplo Detalhado
+### ConversationMemory - Detailed Example
 
 ```python
 from src.core.memory.short_term import ConversationMemory
 
-# Inicializar com limite padrão (20 mensagens)
+# Initialize with the default limit (20 messages)
 memory = ConversationMemory()
 
-# Ou com limite customizado
+# Or with a custom limit
 memory = ConversationMemory(max_messages=100)
 
-# Adicionar mensagens com métodos específicos
-memory.add_system_message("Você é um assistente helpful")
-memory.add_user_message("Qual é a capital do Brasil?")
-memory.add_assistant_message("A capital do Brasil é Brasília")
+# Add messages with specific methods
+memory.add_system_message("You are a helpful assistant")
+memory.add_user_message("What is the capital of Brazil?")
+memory.add_assistant_message("The capital of Brazil is Brasília")
 
-# Recuperar todas as mensagens
+# Retrieve all messages
 all_messages = memory.get_all()
-# Resultado: [
-#     {"role": "system", "content": "Você é um assistente helpful"},
-#     {"role": "user", "content": "Qual é a capital do Brasil?"},
-#     {"role": "assistant", "content": "A capital do Brasil é Brasília"}
+# Result: [
+#     {"role": "system", "content": "You are a helpful assistant"},
+#     {"role": "user", "content": "What is the capital of Brazil?"},
+#     {"role": "assistant", "content": "The capital of Brazil is Brasília"}
 # ]
 
-# Recuperar apenas as últimas N mensagens
+# Retrieve only the last N messages
 last_2 = memory.get_last_n(2)
-# Resultado: [
-#     {"role": "user", "content": "Qual é a capital do Brasil?"},
-#     {"role": "assistant", "content": "A capital do Brasil é Brasília"}
+# Result: [
+#     {"role": "user", "content": "What is the capital of Brazil?"},
+#     {"role": "assistant", "content": "The capital of Brazil is Brasília"}
 # ]
 
-# Limpar histórico
+# Clear history
 memory.clear()
 ```
 
 ---
 
-## Caso de Uso: Integração com Agent
+## Usage Example: Integrating with an Agent
 
 ```python
 from src.core.agents.base_agent import BaseAgent
@@ -171,16 +171,16 @@ class MyAgent(BaseAgent):
         self.memory = ConversationMemory(max_messages=50)
     
     def process(self, user_input: str) -> str:
-        # Adicionar mensagem do usuário
+        # Add user message
         self.memory.add_user_message(user_input)
         
-        # Processar com contexto das últimas mensagens
+        # Process using the last messages as context
         context = self.memory.get_all()
-        # ... usar context no LLM
+        # ... use context in the LLM
         
-        response = "Resposta do agente"
+        response = "Agent response"
         
-        # Adicionar resposta ao histórico
+        # Add response to history
         self.memory.add_assistant_message(response)
         
         return response
@@ -188,17 +188,17 @@ class MyAgent(BaseAgent):
 
 ---
 
-### LongTermMemory - Exemplo de Uso
+### LongTermMemory - Usage Example
 
 ```python
 from src.core.memory.long_term import LongTermMemory
 
-# Inicializar
+# Initialize
 long_memory = LongTermMemory(collection_name="conversation_history")
 
-# Armazenar um resumo de conversa antiga
+# Store a summary of an older conversation
 long_memory.store(
-    content="Usuário perguntou sobre importação de dados CSV. Solução: usar pandas.read_csv()",
+    content="User asked about CSV data import. Solution: use pandas.read_csv()",
     metadata={
         "topic": "data_import",
         "importance": "high",
@@ -206,9 +206,9 @@ long_memory.store(
     }
 )
 
-# Armazenar outro aprendizado
+# Store another learning
 long_memory.store(
-    content="Preferência do usuário: quer sempre gráficos em matplotlib",
+    content="User preference: always display charts with matplotlib",
     metadata={
         "topic": "visualization",
         "importance": "medium",
@@ -216,35 +216,35 @@ long_memory.store(
     }
 )
 
-# Recuperar memórias por tópico
+# Retrieve memories by topic
 data_memories = long_memory.retrieve_by_topic("data_import")
 
-# Recuperar memórias mais recentes
-recent = long_memory.get_last_n(5)
+# Retrieve the most recent memories
+recent = long_memory.retrieve_recent(5)
 
-# Recuperar memórias mais acessadas (mais relevantes)
+# Retrieve the most accessed memories (most relevant)
 important = long_memory.retrieve_most_accessed(3)
 
-# Ver estatísticas
+# Get stats
 stats = long_memory.get_stats()
-# Resultado: {
+# Result: {
 #     "total_memories": 2,
 #     "total_accesses": 5,
 #     "avg_accesses_per_memory": 2.5,
 #     ...
 # }
 
-# Atualizar uma memória
+# Update a memory
 long_memory.update_memory(
     memory_id="mem_0_1713262800",
-    new_content="Nova informação sobre importação...",
+    new_content="New information about data import...",
     new_metadata={"importance": "critical"}
 )
 ```
 
 ---
 
-### Pipeline Completo: Curto + Longo Prazo
+### Full Pipeline: Short + Long Term
 
 ```python
 from src.core.memory.short_term import ConversationMemory
@@ -256,27 +256,27 @@ class SmartAgent:
         self.long_term = LongTermMemory()
     
     def process(self, user_input: str) -> str:
-        # 1. Adicionar ao contexto recente
+        # 1. Add to recent context
         self.short_term.add_user_message(user_input)
         
-        # 2. Recuperar contexto relevante do longo prazo
+        # 2. Retrieve relevant long-term context
         relevant_memories = self.long_term.retrieve_by_topic("general")
         
-        # 3. Combinar contextos
+        # 3. Combine contexts
         context = {
             "recent": self.short_term.get_all(),
             "background": relevant_memories
         }
         
-        # 4. Processar com LLM usando contexto combinado
-        response = "Resposta do agente"
+        # 4. Process with an LLM using the combined context
+        response = "Agent response"
         
-        # 5. Adicionar resposta ao contexto recente
+        # 5. Add the response to recent context
         self.short_term.add_assistant_message(response)
         
-        # 6. Se conversa atingir limite, resumir e armazenar
-        if len(self.short_term) >= 20:
-            summary = self._summarize_conversation()  # Usar LLM
+        # 6. If the conversation reaches the limit, summarize and store
+        if len(self.short_term.get_all()) >= 20:
+            summary = self._summarize_conversation()  # Use an LLM
             self.long_term.store(
                 content=summary,
                 metadata={"topic": "general", "importance": "medium"}
@@ -286,31 +286,31 @@ class SmartAgent:
         return response
     
     def _summarize_conversation(self) -> str:
-        # Usar LLM para resumir as mensagens recentes
+        # Use an LLM to summarize the recent messages
         messages = self.short_term.get_all()
-        # ... chamada ao LLM ...
-        return "Resumo da conversa"
+        # ... LLM call ...
+        return "Conversation summary"
 ```
 
 ---
 
-## Próximos Passos (Evolução em Produção)
+## Next Steps (Production Evolution)
 
-O `LongTermMemory` oferece uma base sólida. Para escalar em produção, integre com:
+`LongTermMemory` provides a solid foundation. To scale in production, integrate with:
 
-- **ChromaDB** (local, zero config) - ideal para começar
-- **Pinecone** (cloud, gerenciado) - melhor performance
-- **Weaviate** (open source, híbrido) - flexibilidade
-- **Qdrant** (alta performance) - para escala
+- **ChromaDB** (local, zero config) - ideal for getting started
+- **Pinecone** (cloud, managed) - better performance
+- **Weaviate** (open source, hybrid) - flexibility
+- **Qdrant** (high performance) - for scale
 
-### Exemplo de Evolução: ChromaDB Integration
+### Evolution Example: ChromaDB Integration
 
 ```python
 import chromadb
 from typing import List, Dict
 
 class LongTermMemoryWithChroma(LongTermMemory):
-    """Estende LongTermMemory com ChromaDB para busca semântica."""
+    """Extends LongTermMemory with ChromaDB for semantic search."""
     
     def __init__(self, collection_name: str = "memories"):
         super().__init__(collection_name)
@@ -321,10 +321,10 @@ class LongTermMemoryWithChroma(LongTermMemory):
         )
     
     def store(self, content: str, metadata: Optional[Dict] = None) -> str:
-        """Armazena em memória local + ChromaDB."""
+        """Stores data locally and in ChromaDB."""
         memory_id = super().store(content, metadata)
         
-        # Adicionar ao ChromaDB para busca semântica
+        # Add to ChromaDB for semantic search
         self.collection.add(
             ids=[memory_id],
             documents=[content],
@@ -334,7 +334,7 @@ class LongTermMemoryWithChroma(LongTermMemory):
         return memory_id
     
     def retrieve_semantic(self, query: str, n: int = 5) -> List[Dict]:
-        """Busca semântica usando embeddings."""
+        """Performs semantic search using embeddings."""
         results = self.collection.query(
             query_texts=[query],
             n_results=n
@@ -358,22 +358,22 @@ class LongTermMemoryWithChroma(LongTermMemory):
 
 ---
 
-## Recomendações por Caso de Uso
+## Recommendations by Use Case
 
-| Cenário | Short-term | Long-term | Observação |
-|---------|-----------|----------|-----------|
-| **Chatbot MVP** | ConversationMemory (20 msgs) | LongTermMemory (local) | Simples e suficiente |
-| **Chatbot em Produção** | ConversationMemory (50 msgs) | LongTermMemory + ChromaDB | Adicione busca semântica |
-| **Agente Multi-Task** | ConversationMemory (100 msgs) | LongTermMemory + Pinecone | Performance e escala |
-| **Assistente Pessoal** | ConversationMemory (200 msgs) | LongTermMemory + Weaviate | Histórico completo do usuário |
+| Scenario | Short-term | Long-term | Notes |
+|---------|-----------|----------|-------|
+| **Chatbot MVP** | ConversationMemory (20 msgs) | LongTermMemory (local) | Simple and sufficient |
+| **Production Chatbot** | ConversationMemory (50 msgs) | LongTermMemory + ChromaDB | Add semantic search |
+| **Multi-Task Agent** | ConversationMemory (100 msgs) | LongTermMemory + Pinecone | Performance and scale |
+| **Personal Assistant** | ConversationMemory (200 msgs) | LongTermMemory + Weaviate | Full user history |
 
 ---
 
-## Padrão Sugerido: Resumo e Armazenamento
+## Suggested Pattern: Summarize and Store
 
-1. Use `ConversationMemory` para contexto recente (últimas 20 mensagens)
-2. Quando atinge limite, **resuma a conversa com LLM** antes de armazenar
-3. Armazene resumo em `LongTermMemory` com metadados (tópico, data, importância)
-4. Em novas conversas, recupere resumos relevantes via busca semântica
-5. Use resumos como "preâmbulo" junto com ConversationMemory recente
+1. Use `ConversationMemory` for recent context (last 20 messages)
+2. When the limit is reached, **summarize the conversation with an LLM** before storing
+3. Store the summary in `LongTermMemory` with metadata (topic, date, importance)
+4. In new conversations, retrieve relevant summaries using semantic search
+5. Use summaries as a preamble together with recent ConversationMemory
 

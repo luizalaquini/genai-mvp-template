@@ -1,11 +1,11 @@
-"""Memória de curto prazo para agentes."""
+"""Short-term memory for agents."""
 
 from typing import List, Dict
 from collections import deque
 
 
 class ConversationMemory:
-    """Buffer circular de mensagens para contexto do agente."""
+    """Circular message buffer for agent context."""
     
     def __init__(self, max_messages: int = 20):
         self.messages: deque = deque(maxlen=max_messages)

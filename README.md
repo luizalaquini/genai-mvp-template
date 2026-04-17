@@ -1,96 +1,96 @@
 # GenAI Agent Template
 
-Template para MVPs com agentes de IA Generativa — suporta agentes com loop autônomo (ReAct, plan-and-execute) e pipelines lineares.
+Template for generative AI MVPs that supports autonomous agents (ReAct, plan-and-execute) and linear pipelines.
 
-## Estrutura
+## Structure
 
 ```
 genai-mvp-template/
 ├── src/
-│   ├── core/                 # Motor principal do sistema
-│   │   ├── agents/           # Agentes autônomos (ReAct loop)
-│   │   ├── chains/           # Fluxos lineares (sem loop)
-│   │   ├── memory/           # Memória curto/longo prazo
-│   │   │   ├── buffer_memory.py       # Janela deslizante simples
-│   │   │   ├── short_term.py          # ConversationMemory com API rica
-│   │   │   ├── long_term.py           # Armazenamento persistente
+│   ├── core/                 # Core engine
+│   │   ├── agents/           # Autonomous agents (ReAct loop)
+│   │   ├── chains/           # Linear pipelines (no loop)
+│   │   ├── memory/           # Short-term and long-term memory
+│   │   │   ├── buffer_memory.py       # Simple sliding window
+│   │   │   ├── short_term.py          # ConversationMemory with rich API
+│   │   │   ├── long_term.py           # Persistent storage
 │   │   │   └── README.md
-│   │   ├── tools/            # Ferramentas para o agente
+│   │   ├── tools/            # Agent tools
 │   │   │   ├── example_tools.py
-│   │   │   ├── registry.py            # Registro central de tools
+│   │   │   ├── registry.py            # Central tool registry
 │   │   │   └── README.md
-│   │   ├── prompts/          # Templates de prompts versionados
+│   │   ├── prompts/          # Versioned prompt templates
 │   │   │   ├── base_prompt.txt
 │   │   │   └── README.md
-│   │   └── guardrails/       # Validações e segurança
-│   │       ├── input_guard.py         # Validação de entrada
-│   │       ├── output_guard.py        # Validação de saída
+│   │   └── guardrails/       # Validation and safety
+│   │       ├── input_guard.py         # Input validation
+│   │       ├── output_guard.py        # Output validation
 │   │       └── README.md
-│   ├── utils/                # Utilitários compartilhados
+│   ├── utils/                # Shared utilities
 │   │   └── logger.py
-│   ├── assets/               # Recursos estáticos
-│   ├── app.py               # Aplicação principal
-│   ├── config.py            # Configurações globais
+│   ├── assets/               # Static assets
+│   ├── app.py               # Main app
+│   ├── config.py            # Global configuration
 │   └── main.py
 ├── tests/
 │   └── test_agent.py
 ├── data/
-│   ├── raw/                 # Dados brutos
-│   └── processed/           # Dados processados
+│   ├── raw/                 # Raw data
+│   └── processed/           # Processed data
 ├── docs/
-│   ├── architecture.md      # Decisões arquiteturais
-│   ├── contributing.md      # Guia de contribuição
+│   ├── architecture.md      # Architecture decisions
+│   ├── contributing.md      # Contribution guide
 │   ├── decisions.md         # ADRs (Architecture Decision Records)
 │   ├── technical-documentation.md
 │   ├── prompts_strategy.md
 │   ├── scope.md
 │   └── README.md
-├── logs/                    # Logs de execução
-├── playground/              # Prototipagem e testes
+├── logs/                    # Execution logs
+├── playground/              # Prototyping and tests
 │   └── test_chain.py
-├── .env.example             # Template de variáveis de ambiente
-├── requirements.txt         # Dependências Python
+├── .env.example             # Environment variable template
+├── requirements.txt         # Python dependencies
 └── README.md
 ```
 
-## ⚡ Quick Start (5 Minutos)
+## ⚡ Quick Start (5 Minutes)
 
-### Pré-requisitos
+### Prerequisites
 
 - Python 3.10+
-- Conta no [Anthropic Claude](https://console.anthropic.com)
-- Sua API Key do Claude
+- Anthropic Claude account
+- Your Claude API key
 
-### 1. Setup do Ambiente
+### 1. Environment Setup
 
 ```bash
-# Clonar repositório
+# Clone repository
 git clone <repo>
 cd genai-mvp-template
 
-# Criar ambiente virtual (recomendado)
+# Create a virtual environment (recommended)
 python -m venv venv
 source venv/bin/activate  # macOS/Linux
-# ou
+# or
 venv\Scripts\activate  # Windows
 
-# Instalar dependências
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configurar Variáveis de Ambiente
+### 2. Configure Environment Variables
 
 ```bash
-# Copiar template
+# Copy the environment template
 cp .env.example .env
 
-# Editar .env e adicionar sua chave
+# Edit .env and add your key
 ANTHROPIC_API_KEY=sk-ant-...
 ```
 
-### 3. Seu Primeiro MVP (Escolha uma opção)
+### 3. Your First MVP (Choose one)
 
-#### Opção A: Chain Simples ⭐ (Recomendado)
+#### Option A: Simple Chain ⭐ (Recommended)
 
 ```python
 from anthropic import Anthropic
@@ -98,128 +98,129 @@ from src.core.chains.base_chain import run_chain
 
 client = Anthropic()
 response = run_chain(
-    user_input="Qual é a capital do Brasil?",
+    user_input="What is the capital of Brazil?",
     model_client=client,
-    variables={"domain": "geografia"}
+    variables={"domain": "geography"}
 )
 print(response)
 ```
 
-**Salve como `meu_mvp.py` e rode:**
+**Save as `my_mvp.py` and run:**
 ```bash
-python meu_mvp.py
+python my_mvp.py
 ```
 
-#### Opção B: Agent com Ferramentas
+#### Option B: Agent with Tools
 
 ```python
 from anthropic import Anthropic
 from src.core.agents.base_agent import BaseAgent
 
 client = Anthropic()
-agent = BaseAgent(client, max_iterations=10)
-response = agent.run("Qual é a data de hoje? Busque informações sobre IA")
+agent = BaseAgent(model_client=client, max_iterations=10)
+response = agent.run("What is today's date? Search for information about AI")
 print(response)
 ```
 
-#### Opção C: Exemplos Interativos
+#### Option C: Interactive Examples
 
 ```bash
 python QUICK_START.py
 ```
 
-Escolha a opção (1-5) para ver 5 padrões de uso funcionando!
+Choose an option (1-5) to see 5 working usage patterns.
 
 ---
 
-## 📚 Entender o Template
+## 📚 Understand the Template
 
-### Componentes Principais
+### Main Components
 
-| Componente | Uso | Complexidade |
-|-----------|-----|-------------|
-| **Chain** | Call único ao LLM + prompt estruturado | ⭐ Simples |
-| **Agent** | Loop ReAct (raciocina, executa tools, repete) | ⭐⭐⭐ Complexo |
-| **Memory** | Manter contexto entre chamadas | ⭐ Simples |
-| **Tools** | Funções que o agent pode chamar | ⭐⭐ Médio |
-| **Prompts** | Templates de instrução | ⭐ Simples |
-| **Guardrails** | Validar entrada e saída | ⭐ Simples |
+| Component | Purpose | Complexity |
+|-----------|---------|------------|
+| **Chain** | One LLM call with a structured prompt | ⭐ Simple |
+| **Agent** | ReAct loop (reason, execute tools, repeat) | ⭐⭐⭐ Complex |
+| **Memory** | Keep context between calls | ⭐ Simple |
+| **Tools** | Functions the agent can call | ⭐⭐ Medium |
+| **Prompts** | Instruction templates | ⭐ Simple |
+| **Guardrails** | Validate input/output | ⭐ Simple |
 
-### Estrutura de Pastas
+### Folder Structure
 
 ```
 src/core/
-├── chains/         ← Use para MVPs simples (recomendado)
-├── agents/         ← Use se precisar de raciocínio complexo
-├── tools/          ← Adicione suas ferramentas aqui
-├── memory/         ← Contexto das conversas
-├── prompts/        ← Templates de prompts
-└── guardrails/     ← Segurança (validação)
+├── chains/         ← Use for simple MVPs (recommended)
+├── agents/         ← Use when you need complex reasoning
+├── tools/          ← Add your tools here
+├── memory/         ← Conversation context
+├── prompts/        ← Prompt templates
+└── guardrails/     ← Validation and safety
 ```
 
 ---
 
-## 🔨 Customizar para Seu Caso de Uso
+## 🔨 Customize for Your Use Case
 
-### Adicionar uma Ferramenta Nova
+### Add a New Tool
 
 ```python
-# 1. Implementar em src/core/tools/example_tools.py
-def buscar_preco_produto(produto_nome: str) -> dict:
-    """Busca o preço de um produto."""
-    return {"produto": produto_nome, "preco": 99.90}
+# 1. Implement in src/core/tools/example_tools.py
+def fetch_product_price(product_name: str) -> dict:
+    """Fetch the price for a product."""
+    return {"product": product_name, "price": 99.90}
 
-# 2. Registrar em src/core/tools/registry.py
+# 2. Register in src/core/tools/registry.py
 TOOL_REGISTRY = {
-    "buscar_preco_produto": buscar_preco_produto,
+    "fetch_product_price": fetch_product_price,
 }
 
 TOOL_DEFINITIONS = [
     {
-        "name": "buscar_preco_produto",
-        "description": "Busca o preço de um produto",
+        "name": "fetch_product_price",
+        "description": "Fetches the price for a product",
         "input_schema": {
             "type": "object",
             "properties": {
-                "produto_nome": {"type": "string"}
+                "product_name": {"type": "string"}
             },
-            "required": ["produto_nome"]
+            "required": ["product_name"]
         }
     },
 ]
 
-# 3. Usar com agent
-agent = BaseAgent(client)
-response = agent.run("Qual é o preço do notebook XYZ?")
+# 3. Use with the agent
+agent = BaseAgent(model_client=client)
+response = agent.run("What is the price of the XYZ laptop?")
 ```
 
-### Customizar Prompt
+### Customize the Prompt
 
 ```python
-# Editar src/core/prompts/base_prompt.txt
+# Edit src/core/prompts/base_prompt.txt
 response = run_chain(
-    user_input="sua pergunta",
+    user_input="your question",
     model_client=client,
     variables={
-        "domain": "seu domínio",
-        "instruction_1": "sua instrução 1",
-        "instruction_2": "sua instrução 2",
+        "domain": "your domain",
+        "instruction_1": "Be concise",
+        "instruction_2": "Use clear language",
+        "output_format": "Plain text",
     }
 )
 ```
 
-### Adicionar Validações Customizadas
+### Add Custom Validation
 
 ```python
 # src/core/guardrails/input_guard.py
 def validate_input(text: str) -> str:
     if not text or len(text) > 4000:
-        raise InputValidationError("Input inválido")
-    
-    # ADICIONE SUAS VALIDAÇÕES:
-    if "palavra-proibida" in text.lower():
-        raise InputValidationError("Conteúdo não permitido")
-    
+        raise InputValidationError("Invalid input")
+
+    # ADD YOUR VALIDATIONS:
+    if "forbidden-word" in text.lower():
+        raise InputValidationError("Content not allowed")
+
     return text.strip()
 ```
 
@@ -227,53 +228,47 @@ def validate_input(text: str) -> str:
 
 ## 💡 Chain vs Agent?
 
-### Use **Chain** se:
-- ✅ A tarefa é bem definida
-- ✅ Quer resposta rápida
-- ✅ Não precisa raciocinar/iterar
-- ✅ Quer custo baixo
+### Use **Chain** if:
+- ✅ The task is well defined
+- ✅ You want a fast response
+- ✅ It does not require reasoning / iteration
+- ✅ You want lower cost
 
-**Exemplos:** Classificação, Tradução, Resumo
+**Examples:** Classification, Translation, Summarization
 
-### Use **Agent** se:
-- ✅ A tarefa é complexa
-- ✅ Precisa usar múltiplas ferramentas
-- ✅ Precisa "pensar" sobre a melhor ação
-- ✅ A resposta depende de múltiplas etapas
+### Use **Agent** if:
+- ✅ The task is complex
+- ✅ It needs multiple tools
+- ✅ It needs to "think" about the next action
+- ✅ The answer depends on multiple steps
 
-**Exemplos:** Busca de informações, Análise, Resolução de problemas
+**Examples:** Search, Analysis, Problem solving
 
 ---
 
-## 🧪 Testar Seu MVP
+## 🧪 Test Your MVP
 
-### Teste Local
+### Local Test
 
 ```bash
-# Rodar exemplos interativos
+# Run interactive examples
 python QUICK_START.py
 
-# Ou rodar seu próprio script
-python meu_mvp.py
+# Or run your own script
+python my_mvp.py
 ```
 
-### Com Streamlit (Interface Web)
+### Streamlit UI
 
 ```bash
-# Instalar streamlit
 pip install streamlit
-
-# Rodar UI
 streamlit run src/app.py
 ```
 
-### Testes Automatizados
+### Automated Tests
 
 ```bash
-# Rodar todos os testes
 pytest tests/
-
-# Rodar teste específico
 pytest tests/test_agent.py -v
 ```
 
@@ -281,63 +276,67 @@ pytest tests/test_agent.py -v
 
 ## 🚨 Troubleshooting
 
-### Problema: "Module not found"
+### Problem: "Module not found"
+
 ```
 ModuleNotFoundError: No module named 'src'
 ```
 
-**Solução:**
-```bash
-# Certificar que está na raiz do projeto
-pwd  # ou cd para genai-mvp-template
+**Fix:**
 
-# Certificar que venv está ativado
+```bash
+# Make sure you are at the repository root
+pwd  # or cd into genai-mvp-template
+
+# Make sure the virtual environment is active
 source venv/bin/activate  # macOS/Linux
 venv\Scripts\activate     # Windows
 ```
 
-### Problema: "API Key inválida"
+### Problem: "API Key invalid"
+
 ```
 AuthenticationError: Invalid API key
 ```
 
-**Solução:**
-1. Verificar que `.env` existe e tem a chave
-2. Verificar que a chave começa com `sk-ant-`
-3. Testar em https://console.anthropic.com
+**Fix:**
+1. Confirm `.env` exists and contains the key
+2. Confirm the key begins with `sk-ant-`
+3. Verify it in https://console.anthropic.com
 
-### Problema: "Rate limit exceeded"
+### Problem: "Rate limit exceeded"
+
 ```
 RateLimitError: 429
 ```
 
-**Solução:**
-- Muitas requisições rápido
-- Adicione delays entre chamadas
-- Considere usar cache
+**Fix:**
+- Too many requests too quickly
+- Add delays between calls
+- Consider caching
 
 ---
 
-## 🎓 Próximos Passos (Recomendados)
+## 🎓 Recommended Next Steps
 
-### Dia 1: MVP Funcional
-- [ ] Rodar `QUICK_START.py`
-- [ ] Entender Chain vs Agent
-- [ ] Criar seu primeiro script com chain
+### Day 1: Working MVP
+- [ ] Run `QUICK_START.py`
+- [ ] Understand Chain vs Agent
+- [ ] Build your first chain script
 
-### Dia 2: MVP Customizado
-- [ ] Adicionar sua primeira tool
-- [ ] Customizar prompt
-- [ ] Adicionar validações
+### Day 2: Customized MVP
+- [ ] Add your first tool
+- [ ] Customize prompts
+- [ ] Add validation
 
-### Dia 3: MVP em Produção
-- [ ] Adicionar logging
-- [ ] Implementar testes
+### Day 3: Production MVP
+- [ ] Add logging
+- [ ] Implement tests
 - [ ] Deploy (Vercel, Railway, AWS)
 
 ---
 
-## ✨ TL;DR (Muito Longo, Não Leu)
+## ✨ TL;DR
 
 ```bash
 # 1. Setup (2 min)
@@ -346,115 +345,310 @@ cd genai-mvp-template
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-# Editar .env com sua API key
+# Edit .env with your API key
 
-# 2. Rodar exemplo (30 seg)
+# 2. Run example (30 sec)
 python QUICK_START.py
 
-# 3. Criar seu MVP (2 min)
-cat > meu_mvp.py << 'EOF'
+# 3. Create your MVP (2 min)
+cat > my_mvp.py << 'EOF'
 from anthropic import Anthropic
 from src.core.chains.base_chain import run_chain
 
 client = Anthropic()
 response = run_chain(
-    user_input="Sua pergunta aqui",
+    user_input="Your question here",
     model_client=client,
-    variables={"domain": "seu domínio"}
+    variables={"domain": "your domain"}
 )
 print(response)
 EOF
 
-python meu_mvp.py
+python my_mvp.py
 ```
 
-**Pronto! Seu MVP está rodando.** 🎉
+**Ready! Your MVP is running.** 🎉
 
-## Estrutura de Pastas - Guia Detalhado
+## Folder Structure - Detailed Guide
 
-### `src/core/agents/` - Agentes Autônomos
-- **Loop ReAct**: Raciocina → Escolhe Tool → Executa → Observa → Repete
-- Base class com suporte a múltiplas estratégias de agente
-- [Documentação completa →](src/core/agents/README.md)
+### `src/core/agents/` - Autonomous Agents
+- **ReAct loop**: Reason → Choose Tool → Execute → Observe → Repeat
+- Base class with multiple agent strategies
+- [Full docs →](src/core/agents/README.md)
 
-### `src/core/chains/` - Fluxos Lineares
-- Pipelines determinísticos (sem loop autônomo)
-- Ideal para workflows bem definidos
-- [Documentação completa →](src/core/chains/README.md)
+### `src/core/chains/` - Linear Pipelines
+- Deterministic workflows without autonomous loops
+- Ideal for well-defined tasks
+- [Full docs →](src/core/chains/README.md)
 
-### `src/core/memory/` - Sistema de Memória
-- **ConversationMemory**: Contexto recente (últimas 20 msgs)
-- **LongTermMemory**: Histórico persistente e aprendizados
-- [Documentação completa →](src/core/memory/README.md)
+### `src/core/memory/` - Memory System
+- **ConversationMemory**: Recent context (last 20 messages)
+- **LongTermMemory**: Persistent history and learnings
+- [Full docs →](src/core/memory/README.md)
 
-### `src/core/tools/` - Ferramentas
-- Registro central de ferramentas disponíveis
-- Integração automática com agentes
-- [Documentação completa →](src/core/tools/README.md)
+### `src/core/tools/` - Tools
+- Central registry of available tools
+- Automatic agent integration
+- [Full docs →](src/core/tools/README.md)
 
-### `src/core/prompts/` - Templates de Prompts
-- Versionamento manual de prompts
-- Convenção: `{nome}_v{major}.{minor}.txt`
-- [Documentação completa →](src/core/prompts/README.md)
+### `src/core/prompts/` - Prompt Templates
+- Manual prompt versioning
+- Convention: `{name}_v{major}.{minor}.txt`
+- [Full docs →](src/core/prompts/README.md)
 
-### `src/core/guardrails/` - Segurança
-- Validação de entrada do usuário
-- Validação de saída do agente
-- Prevenção de prompt injection
-- [Documentação completa →](src/core/guardrails/README.md)
+### `src/core/guardrails/` - Safety Layer
+- User input validation
+- Agent output validation
+- Prompt injection protection
+- [Full docs →](src/core/guardrails/README.md)
 
-## Fluxo de Desenvolvimento
+## Development Flow
 
 ```
 USER INPUT
     ↓
-INPUT_GUARD (validação de entrada)
+INPUT_GUARD (validate input)
     ↓
-AGENT/CHAIN (processamento)
-    ├── Acessa MEMORY (contexto)
-    ├── Usa TOOLS (ações)
-    └── Consulta PROMPTS (instruções)
+AGENT/CHAIN (processing)
+    ├── Uses MEMORY (context)
+    ├── Uses TOOLS (actions)
+    └── Uses PROMPTS (instructions)
     ↓
-OUTPUT_GUARD (validação de saída)
+OUTPUT_GUARD (validation)
     ↓
-RESPONSE PARA USUÁRIO
+USER RESPONSE
 ```
 
-## Testes
+## Tests
 
 ```bash
-# Rodar todos os testes
 pytest tests/
-
-# Rodar teste específico
 pytest tests/test_agent.py -v
 ```
 
-## 📖 Documentação Detalhada
+## Documentation
 
-Para aprofundar em cada componente, consulte:
-
-- **[src/core/chains/README.md](src/core/chains/README.md)** - Chains (pipelines lineares)
+- **[src/core/chains/README.md](src/core/chains/README.md)** - Chains (linear pipelines)
 - **[src/core/agents/README.md](src/core/agents/README.md)** - Agents (ReAct loop)
-- **[src/core/tools/README.md](src/core/tools/README.md)** - Tools (ferramentas)
-- **[src/core/memory/README.md](src/core/memory/README.md)** - Memory (contexto)
-- **[src/core/guardrails/README.md](src/core/guardrails/README.md)** - Guardrails (segurança)
-- **[src/core/prompts/README.md](src/core/prompts/README.md)** - Prompts (templates)
+- **[src/core/tools/README.md](src/core/tools/README.md)** - Tools
+- **[src/core/memory/README.md](src/core/memory/README.md)** - Memory
+- **[src/core/guardrails/README.md](src/core/guardrails/README.md)** - Guardrails
+- **[src/core/prompts/README.md](src/core/prompts/README.md)** - Prompts
 
-### Arquitetura e Decisões
+### Architecture and Decisions
 
-- **[docs/architecture.md](docs/architecture.md)** - Decisões e padrões
-- **[docs/contributing.md](docs/contributing.md)** - Guia de contribuição
+- **[docs/architecture.md](docs/architecture.md)** - Architecture overview
+- **[docs/contributing.md](docs/contributing.md)** - Contribution guide
+- **[docs/decisions.md](docs/decisions.md)** - ADRs
+- **[docs/scope.md](docs/scope.md)** - Project scope
+- **[docs/technical-documentation.md](docs/technical-documentation.md)** - Technical reference
+- **[docs/prompts_strategy.md](docs/prompts_strategy.md)** - Prompt strategy
+
+## Next Steps
+
+1. ✅ Configure the environment and install dependencies
+2. ✅ Explore examples in `playground/`
+3. ✅ Read `docs/architecture.md`
+4. ✅ Build your first agent or chain
+5. ✅ Add custom guardrails for your use case
+6. ✅ Store and retrieve knowledge with LongTermMemory
+
+```bash
+# Install streamlit
+pip install streamlit
+
+# Run UI
+streamlit run src/app.py
+```
+
+### Automated Tests
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run a specific test
+pytest tests/test_agent.py -v
+```
+
+---
+
+## 🚨 Troubleshooting
+
+### Problem: "Module not found"
+```
+ModuleNotFoundError: No module named 'src'
+```
+
+**Fix:**
+```bash
+# Make sure you are at the project root
+pwd  # or cd into genai-mvp-template
+
+# Make sure the virtual environment is active
+source venv/bin/activate  # macOS/Linux
+venv\Scripts\activate     # Windows
+```
+
+### Problem: "API key invalid"
+```
+AuthenticationError: Invalid API key
+```
+
+**Fix:**
+1. Confirm `.env` exists and contains the key
+2. Confirm the key begins with `sk-ant-`
+3. Verify the key in https://console.anthropic.com
+
+### Problem: "Rate limit exceeded"
+```
+RateLimitError: 429
+```
+
+**Fix:**
+- Too many requests too quickly
+- Add delays between calls
+- Consider caching
+
+---
+
+## 🎓 Recommended Next Steps
+
+### Day 1: Working MVP
+- [ ] Run `QUICK_START.py`
+- [ ] Understand Chain vs Agent
+- [ ] Build your first chain script
+
+### Day 2: Customized MVP
+- [ ] Add your first tool
+- [ ] Customize prompts
+- [ ] Add validation
+
+### Day 3: Production MVP
+- [ ] Add logging
+- [ ] Implement tests
+- [ ] Deploy (Vercel, Railway, AWS)
+
+---
+
+## ✨ TL;DR (Too Long; Didn’t Read)
+
+```bash
+# 1. Setup (2 min)
+git clone <repo>
+cd genai-mvp-template
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+# Edit .env with your API key
+
+# 2. Run example (30 sec)
+python QUICK_START.py
+
+# 3. Create your MVP (2 min)
+cat > my_mvp.py << 'EOF'
+from anthropic import Anthropic
+from src.core.chains.base_chain import run_chain
+
+client = Anthropic()
+response = run_chain(
+    user_input="Your question here",
+    model_client=client,
+    variables={"domain": "your domain"}
+)
+print(response)
+EOF
+
+python my_mvp.py
+```
+
+**Ready! Your MVP is running.** 🎉
+
+## Folder Structure - Detailed Guide
+
+### `src/core/agents/` - Autonomous Agents
+- **ReAct loop**: Reason → Choose Tool → Execute → Observe → Repeat
+- Base class with support for multiple agent strategies
+- [Full docs →](src/core/agents/README.md)
+
+### `src/core/chains/` - Linear Pipelines
+- Deterministic workflows without autonomous loops
+- Ideal for well-defined tasks
+- [Full docs →](src/core/chains/README.md)
+
+### `src/core/memory/` - Memory System
+- **ConversationMemory**: Recent context (last 20 messages)
+- **LongTermMemory**: Persistent history and learnings
+- [Full docs →](src/core/memory/README.md)
+
+### `src/core/tools/` - Tools
+- Central registry of available tools
+- Automatic agent integration
+- [Full docs →](src/core/tools/README.md)
+
+### `src/core/prompts/` - Prompt Templates
+- Manual prompt versioning
+- Convention: `{name}_v{major}.{minor}.txt`
+- [Full docs →](src/core/prompts/README.md)
+
+### `src/core/guardrails/` - Safety Layer
+- User input validation
+- Agent output validation
+- Prompt injection protection
+- [Full docs →](src/core/guardrails/README.md)
+
+## Development Flow
+
+```
+USER INPUT
+    ↓
+INPUT_GUARD (input validation)
+    ↓
+AGENT/CHAIN (processing)
+    ├── Uses MEMORY (context)
+    ├── Uses TOOLS (actions)
+    └── Uses PROMPTS (instructions)
+    ↓
+OUTPUT_GUARD (validation)
+    ↓
+USER RESPONSE
+```
+
+## Tests
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run a specific test
+pytest tests/test_agent.py -v
+```
+
+## 📖 Detailed Documentation
+
+For more details on each component, see:
+
+- **[src/core/chains/README.md](src/core/chains/README.md)** - Chains (linear pipelines)
+- **[src/core/agents/README.md](src/core/agents/README.md)** - Agents (ReAct loop)
+- **[src/core/tools/README.md](src/core/tools/README.md)** - Tools
+- **[src/core/memory/README.md](src/core/memory/README.md)** - Memory
+- **[src/core/guardrails/README.md](src/core/guardrails/README.md)** - Guardrails
+- **[src/core/prompts/README.md](src/core/prompts/README.md)** - Prompts
+
+### Architecture and Decisions
+
+- **[docs/architecture.md](docs/architecture.md)** - Decisions and patterns
+- **[docs/contributing.md](docs/contributing.md)** - Contribution guide
 - **[docs/decisions.md](docs/decisions.md)** - ADRs (Architecture Decision Records)
-- **[docs/scope.md](docs/scope.md)** - Escopo do projeto
-- **[docs/technical-documentation.md](docs/technical-documentation.md)** - Referência técnica
-- **[docs/prompts_strategy.md](docs/prompts_strategy.md)** - Estratégia de prompts
+- **[docs/scope.md](docs/scope.md)** - Project scope
+- **[docs/technical-documentation.md](docs/technical-documentation.md)** - Technical reference
+- **[docs/prompts_strategy.md](docs/prompts_strategy.md)** - Prompt strategy
 
-## Próximos Passos
+## Next Steps
 
-1. ✅ Configurar ambiente e instalar dependências
-2. ✅ Explorar exemplos em `playground/`
-3. ✅ Ler [architecture.md](docs/architecture.md)
-4. ✅ Criar seu primeiro agent ou chain
-5. ✅ Implementar guardrails específicos do seu caso de uso
-6. ✅ Armazenar e recuperar conhecimento com LongTermMemory
+1. ✅ Configure the environment and install dependencies
+2. ✅ Explore examples in `playground/`
+3. ✅ Read [architecture.md](docs/architecture.md)
+4. ✅ Build your first agent or chain
+5. ✅ Add custom guardrails for your use case
+6. ✅ Store and retrieve knowledge with LongTermMemory

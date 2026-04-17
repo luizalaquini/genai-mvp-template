@@ -1,33 +1,33 @@
-# Chains - Fluxos Lineares
+# Chains - Linear Workflows
 
-Pipelines determinísticos sem loop autônomo. Use para workflows bem definidos onde o fluxo é previsível.
+Deterministic pipelines without an autonomous loop. Use for well-defined workflows where the flow is predictable.
 
-## Quando Usar Chains vs Agents
+## When to Use Chains vs Agents
 
-| Aspecto | Chains | Agents |
+| Aspect | Chains | Agents |
 |--------|--------|--------|
-| **Fluxo** | Linear e previsível | Autônomo e iterativo |
-| **Complexidade** | Simples | Complexa |
-| **Ferramentas** | Não suportadas | Suportadas |
-| **Latência** | Baixa (1 request) | Alta (múltiplos requests) |
-| **Custo** | Baixo | Alto |
-| **Caso de Uso** | Tarefas simples | Tarefas que precisam raciocinar |
+| **Flow** | Linear and predictable | Autonomous and iterative |
+| **Complexity** | Simple | Complex |
+| **Tools** | Not supported | Supported |
+| **Latency** | Low (1 request) | High (multiple requests) |
+| **Cost** | Low | High |
+| **Use Case** | Simple tasks | Tasks that require reasoning |
 
-## Arquitetura de uma Chain
+## Chain Architecture
 
 ```
 Input
   ↓
 Load Prompt Template
   ↓
-Format com Variáveis
+Format with Variables
   ↓
-Call LLM (uma única vez)
+Call LLM (one time)
   ↓
 Output
 ```
 
-## BaseChain - Exemplo de Uso
+## BaseChain - Usage Example
 
 ```python
 from anthropic import Anthropic
@@ -35,122 +35,63 @@ from src.core.chains.base_chain import run_chain
 
 client = Anthropic()
 
-# Chain simples
+# Simple chain
 response = run_chain(
-    user_input="Qual é a capital do Brasil?",
+    user_input="What is the capital of Brazil?",
     model_client=client,
     variables={"tone": "formal"}
 )
 print(response)
 ```
 
-## Componentes Principais
+## Main Components
 
 ### run_chain()
 
-**Parâmetros:**
-- `user_input`: Mensagem do usuário
-- `model_client`: Cliente de IA (ex: Anthropic)
-- `variables`: Dicionário para substituir placeholders no prompt
+**Parameters:**
+- `user_input`: User message
+- `model_client`: AI client (e.g. Anthropic)
+- `variables`: Dictionary to replace placeholders in the prompt
 
-**Retorno:**
-- String com resposta do LLM
+**Returns:**
+- String with the LLM response
 
-**Exemplo:**
+**Example:**
 
 ```python
 response = run_chain(
-    user_input="Resuma este texto em 3 pontos",
+    user_input="Summarize this text into 3 points",
     model_client=client,
     variables={
-        "tone": "técnico",
+        "tone": "technical",
         "max_words": 100,
-        "language": "português"
+        "language": "english"
     }
 )
 ```
 
 ### load_prompt()
 
-Carrega template de prompt de `src/core/prompts/`
+Loads a prompt template from `src/core/prompts/`
 
-**Convenção:**
-- Nome do arquivo: `{nome_descritivo}_v{major}.{minor}.txt`
-- Exemplo: `summarize_v1.0.txt`, `translate_v2.1.txt`
+**Convention:**
+- File name: `{descriptive_name}_v{major}.{minor}.txt`
+- Example: `summarize_v1.0.txt`, `translate_v2.1.txt`
 
-## Criando Suas Próprias Chains
+## Common Patterns
 
-### Opção 1: Usar run_chain() Diretamente
-
-```python
-from anthropic import Anthropic
-from src.core.chains.base_chain import run_chain
-
-client = Anthropic()
-
-# Simples e direto
-result = run_chain(
-    user_input="Traduza para espanhol: Olá mundo",
-    model_client=client,
-    variables={"target_language": "espanhol"}
-)
-```
-
-### Opção 2: Criar Chain Customizada
-
-```python
-from src.core.chains.base_chain import load_prompt
-from src.core.guardrails.input_guard import validate_input
-from src.core.guardrails.output_guard import validate_output
-
-class SummarizationChain:
-    """Chain para sumarizar textos."""
-    
-    def __init__(self, model_client):
-        self.client = model_client
-        self.prompt = load_prompt("summarize")
-    
-    def run(self, text: str, max_words: int = 100) -> str:
-        # 1. Validar entrada
-        text = validate_input(text)
-        
-        # 2. Preparar prompt
-        prompt = self.prompt.format(max_words=max_words)
-        
-        # 3. Chamar LLM (uma única vez)
-        response = self.client.messages.create(
-            model="claude-3-5-sonnet-20241022",
-            max_tokens=512,
-            system=prompt,
-            messages=[{"role": "user", "content": text}]
-        )
-        
-        # 4. Validar e retornar saída
-        result = response.content[0].text
-        validate_output(result)
-        return result
-
-# Usar
-from anthropic import Anthropic
-client = Anthropic()
-chain = SummarizationChain(client)
-summary = chain.run("Seu texto longo aqui...", max_words=50)
-```
-
-## Padrões Comuns
-
-### Pattern 1: Classificação
+### Pattern 1: Classification
 
 ```python
 def classify_sentiment(text: str, model_client) -> str:
     return run_chain(
         user_input=text,
         model_client=model_client,
-        variables={"task": "Classificar sentimento"}
+        variables={"task": "Classify sentiment"}
     )
 ```
 
-### Pattern 2: Tradução
+### Pattern 2: Translation
 
 ```python
 def translate(text: str, target_lang: str, model_client) -> str:
@@ -161,7 +102,7 @@ def translate(text: str, target_lang: str, model_client) -> str:
     )
 ```
 
-### Pattern 3: Extração de Dados
+### Pattern 3: Data Extraction
 
 ```python
 def extract_entities(text: str, model_client) -> dict:
@@ -175,29 +116,29 @@ def extract_entities(text: str, model_client) -> dict:
     return json.loads(response)
 ```
 
-### Pattern 4: Composição de Chains
+### Pattern 4: Chain Composition
 
 ```python
 def complex_workflow(text: str, model_client):
-    # Chain 1: Sumarizar
+    # Chain 1: Summarize
     summary = run_chain(
         user_input=text,
         model_client=model_client,
         variables={"task": "summarize"}
     )
     
-    # Chain 2: Classificar
+    # Chain 2: Classify
     classification = run_chain(
         user_input=summary,
         model_client=model_client,
         variables={"task": "classify"}
     )
     
-    # Chain 3: Traduzir
+    # Chain 3: Translate
     translation = run_chain(
         user_input=classification,
         model_client=model_client,
-        variables={"target_language": "espanhol"}
+        variables={"target_language": "spanish"}
     )
     
     return {
@@ -207,9 +148,9 @@ def complex_workflow(text: str, model_client):
     }
 ```
 
-## Gerenciamento de Prompts
+## Prompt Management
 
-### Estrutura de Prompts para Chains
+### Prompt Structure for Chains
 
 ```
 src/core/prompts/
@@ -219,100 +160,339 @@ src/core/prompts/
 └── extract_v2.1.txt
 ```
 
-### Exemplo de Prompt com Placeholders
+### Prompt Example with Placeholders
 
 ```txt
 # summarize_v1.0.txt
 
-Você é um especialista em resumos. Seu trabalho é criar resumos concisos e informativos.
+You are a summary expert. Your job is to create concise, informative summaries.
 
-Tome o seguinte texto e crie um resumo em português com no máximo {max_words} palavras.
-Mantenha os pontos principais e ignore detalhes secundários.
+Take the following text and create an English summary with a maximum of {max_words} words.
+Keep the main points and ignore secondary details.
 
-Formato de saída: {output_format}
-Público alvo: {audience}
+Output format: {output_format}
+Target audience: {audience}
 
-Texto a resumir:
+Text to summarize:
 {text}
 ```
 
-**Uso:**
+**Usage:**
 
 ```python
 run_chain(
-    user_input="Seu texto aqui...",
+    user_input="Your text here...",
     model_client=client,
     variables={
         "max_words": 150,
         "output_format": "bullet points",
-        "audience": "executivos"
+        "audience": "executives"
     }
 )
 ```
 
-## Boas Práticas
+## Best Practices
 
-✅ **Faça:**
-- Use chains para tarefas bem definidas
-- Mantenha prompts em arquivos versionados
-- Valide entrada e saída com guardrails
-- Use variáveis para customizar comportamento
-- Teste diferentes prompt versions (v1.0, v1.1, v2.0)
+✅ **Do:**
+- Use chains for well-defined tasks
+- Keep prompts in versioned files
+- Validate input and output with guardrails
+- Use variables to customize behavior
+- Test different prompt versions (v1.0, v1.1, v2.0)
 
-❌ **Evite:**
-- Chains com lógica muito complexa (use agents)
-- Hardcoding de prompts no código
-- Sem validação de entrada/saída
-- Prompts muito longos (use summarization)
-- Modificar prompts em runtime sem versionar
+❌ **Avoid:**
+- Chains with too much logic (use agents instead)
+- Hardcoding prompts in code
+- No input/output validation
+- Prompts that are too long (use summarization)
+- Modifying prompts at runtime without versioning
 
 ## Performance
 
-### Comparação com Agents
+### Comparison with Agents
 
 **Chain:**
-- 1 request ao LLM
-- Latência: ~500ms
-- Custo: Baixo
+- 1 request to the LLM
+- Latency: ~500ms
+- Cost: Low
 
-**Agent (com 3 iterações):**
-- 3+ requests ao LLM
-- Latência: ~2000ms
-- Custo: 3x maior
+**Agent (with 3 iterations):**
+- 3+ requests to the LLM
+- Latency: ~2000ms
+- Cost: 3x higher
 
-**Recomendação:** Use chains quando possível, agents quando necessário raciocinar.
+**Recommendation:** Use chains when possible, agents when reasoning is required.
 
-## Integração com Outros Componentes
+## Integration with Other Components
 
 ```
 Chain Input
     ↓
-Input Guard (validar)
+Input Guard (validate)
     ↓
 Load Prompt (templates)
     ↓
-Format Variáveis
+Format Variables
     ↓
 Call LLM
     ↓
-Output Guard (validar)
+Output Guard (validate)
     ↓
 Chain Output
 ```
 
 ## Troubleshooting
 
-| Problema | Causa | Solução |
+| Problem | Cause | Fix |
 |----------|-------|---------|
-| Variável não substituída | Placeholder incorreto | Usar `{nome}` no prompt |
-| Prompt não encontrado | Arquivo não existe | Verificar nome em `src/core/prompts/` |
-| Saída inválida | Formato inesperado | Adicionar instrução de formato no prompt |
-| Latência alta | LLM lento | Usar modelo mais rápido ou cache |
+| Variable not substituted | Incorrect placeholder | Use `{name}` in the prompt |
+| Prompt not found | File does not exist | Check name in `src/core/prompts/` |
+| Invalid output | Unexpected format | Add output format instructions to the prompt |
+| High latency | Slow LLM | Use a faster model or cache |
 
-## Próximos Passos
+## Next Steps
 
-- [ ] Criar prompts para casos de uso específicos
-- [ ] Versionar prompts existentes
-- [ ] Implementar cache de prompts
-- [ ] Adicionar logging detalhado
-- [ ] Otimizar custo via prompt engineering
+- [ ] Create prompts for specific use cases
+- [ ] Version existing prompts
+- [ ] Implement prompt caching
+- [ ] Add detailed logging
+- [ ] Optimize cost via prompt engineering
+
+## Creating Your Own Chains
+
+### Option 1: Use run_chain() Directly
+
+```python
+from anthropic import Anthropic
+from src.core.chains.base_chain import run_chain
+
+client = Anthropic()
+
+# Simple and direct
+result = run_chain(
+    user_input="Translate to Spanish: Hello world",
+    model_client=client,
+    variables={"target_language": "spanish"}
+)
+```
+
+### Option 2: Create a Custom Chain
+
+```python
+from src.core.chains.base_chain import load_prompt
+from src.core.guardrails.input_guard import validate_input
+from src.core.guardrails.output_guard import validate_output
+
+class SummarizationChain:
+    """Chain to summarize texts."""
+    
+    def __init__(self, model_client):
+        self.client = model_client
+        self.prompt = load_prompt("summarize")
+    
+    def run(self, text: str, max_words: int = 100) -> str:
+        # 1. Validate input
+        text = validate_input(text)
+        
+        # 2. Prepare prompt
+        prompt = self.prompt.format(max_words=max_words)
+        
+        # 3. Call LLM (one time)
+        response = self.client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=512,
+            system=prompt,
+            messages=[{"role": "user", "content": text}]
+        )
+        
+        # 4. Validate and return output
+        result = response.content[0].text
+        validate_output(result)
+        return result
+
+# Usage
+from anthropic import Anthropic
+client = Anthropic()
+chain = SummarizationChain(client)
+summary = chain.run("Your long text here...", max_words=50)
+```
+
+## Common Patterns
+
+### Pattern 1: Classification
+
+```python
+def classify_sentiment(text: str, model_client) -> str:
+    return run_chain(
+        user_input=text,
+        model_client=model_client,
+        variables={"task": "Classify sentiment"}
+    )
+```
+
+### Pattern 2: Translation
+
+```python
+def translate(text: str, target_lang: str, model_client) -> str:
+    return run_chain(
+        user_input=text,
+        model_client=model_client,
+        variables={"target_language": target_lang}
+    )
+```
+
+### Pattern 3: Data Extraction
+
+```python
+def extract_entities(text: str, model_client) -> dict:
+    response = run_chain(
+        user_input=text,
+        model_client=model_client,
+        variables={"format": "JSON"}
+    )
+    # Parse JSON response
+    import json
+    return json.loads(response)
+```
+
+### Pattern 4: Chain Composition
+
+```python
+def complex_workflow(text: str, model_client):
+    # Chain 1: Summarize
+    summary = run_chain(
+        user_input=text,
+        model_client=model_client,
+        variables={"task": "summarize"}
+    )
+    
+    # Chain 2: Classify
+    classification = run_chain(
+        user_input=summary,
+        model_client=model_client,
+        variables={"task": "classify"}
+    )
+    
+    # Chain 3: Translate
+    translation = run_chain(
+        user_input=classification,
+        model_client=model_client,
+        variables={"target_language": "spanish"}
+    )
+    
+    return {
+        "summary": summary,
+        "classification": classification,
+        "translation": translation
+    }
+```
+
+## Prompt Management
+
+### Prompt Structure for Chains
+
+```
+src/core/prompts/
+├── summarize_v1.0.txt
+├── classify_v1.0.txt
+├── translate_v1.0.txt
+└── extract_v2.1.txt
+```
+
+### Prompt Example with Placeholders
+
+```txt
+# summarize_v1.0.txt
+
+You are a summary specialist. Your job is to create concise, informative summaries.
+
+Take the following text and create an English summary with a maximum of {max_words} words.
+Keep the main points and ignore secondary details.
+
+Output format: {output_format}
+Target audience: {audience}
+
+Text to summarize:
+{text}
+```
+
+**Usage:**
+
+```python
+run_chain(
+    user_input="Your text here...",
+    model_client=client,
+    variables={
+        "max_words": 150,
+        "output_format": "bullet points",
+        "audience": "executives"
+    }
+)
+```
+
+## Best Practices
+
+✅ **Do:**
+- Use chains for well-defined tasks
+- Keep prompts in versioned files
+- Validate input and output with guardrails
+- Use variables to customize behavior
+- Test different prompt versions (v1.0, v1.1, v2.0)
+
+❌ **Avoid:**
+- Chains with too much logic (use agents)
+- Hardcoding prompts in code
+- Missing input/output validation
+- Prompts that are too long (use summarization)
+- Modifying prompts at runtime without versioning
+
+## Performance
+
+### Comparison with Agents
+
+**Chain:**
+- 1 request to the LLM
+- Latency: ~500ms
+- Cost: Low
+
+**Agent (with 3 iterations):**
+- 3+ requests to the LLM
+- Latency: ~2000ms
+- Cost: 3x higher
+
+**Recommendation:** Use chains when possible, agents when necessary for reasoning.
+
+## Integration with Other Components
+
+```
+Chain Input
+    ↓
+Input Guard (validate)
+    ↓
+Load Prompt (templates)
+    ↓
+Format Variables
+    ↓
+Call LLM
+    ↓
+Output Guard (validate)
+    ↓
+Chain Output
+```
+
+## Troubleshooting
+
+| Problem | Cause | Fix |
+|----------|-------|---------|
+| Variable not substituted | Incorrect placeholder | Use `{name}` in the prompt |
+| Prompt not found | File does not exist | Check name in `src/core/prompts/` |
+| Invalid output | Unexpected format | Add output format instructions to the prompt |
+| High latency | Slow LLM | Use a faster model or cache |
+
+## Next Steps
+
+- [ ] Create prompts for specific use cases
+- [ ] Version existing prompts
+- [ ] Implement prompt caching
+- [ ] Add detailed logging
+- [ ] Optimize cost via prompt engineering

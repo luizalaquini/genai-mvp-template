@@ -1,5 +1,5 @@
 """
-Guardrails de entrada — valida e sanitiza o input antes de enviar ao agente.
+Input guardrails — validate and sanitize text before sending it to the agent.
 """
 MAX_INPUT_LENGTH = 4000
 
@@ -10,9 +10,9 @@ class InputValidationError(ValueError):
 
 def validate_input(text: str) -> str:
     if not text or not text.strip():
-        raise InputValidationError("Input nao pode ser vazio.")
+        raise InputValidationError("Input cannot be empty.")
     if len(text) > MAX_INPUT_LENGTH:
         raise InputValidationError(
-            f"Input muito longo ({len(text)} chars). Limite: {MAX_INPUT_LENGTH}."
+            f"Input too long ({len(text)} chars). Limit: {MAX_INPUT_LENGTH}."
         )
     return text.strip()

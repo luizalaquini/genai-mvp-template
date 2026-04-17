@@ -1,13 +1,13 @@
-"""Ferramentas de exemplo — substitua pelas suas."""
+"""Example tools — replace these with your own implementations."""
 from datetime import date
 
 
 def get_current_date() -> dict:
-    """Retorna a data atual."""
+    """Returns the current date."""
     return {"date": date.today().isoformat()}
 
 
 def search_web(query: str) -> dict:
-    """Stub de busca web — implemente com sua API preferida."""
-    # Exemplo: integrar com Tavily, Brave Search, SerpAPI...
-    return {"results": f"[stub] Resultados para: {query}"}
+    """Web search stub — implement with your preferred API."""
+    # Example: integrate with Tavily, Brave Search, SerpAPI...
+    return {"results": f"[stub] Results for: {query}"}

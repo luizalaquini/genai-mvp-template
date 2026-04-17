@@ -1,4 +1,4 @@
-"""Memória de longo prazo para agentes com busca semântica."""
+"""Long-term memory for agents with semantic search."""
 
 from typing import List, Dict, Optional
 from datetime import datetime
@@ -6,37 +6,37 @@ from datetime import datetime
 
 class LongTermMemory:
     """
-    Armazenamento persistente de memórias com busca semântica.
+    Persistent memory storage with semantic search.
     
-    Uso recomendado:
-    - Resumos de conversas antigas
-    - Contexto importante para futuras interações
-    - Aprendizados do agente
+    Recommended use:
+    - Summaries of older conversations
+    - Important context for future interactions
+    - Agent learning and knowledge retention
     
-    Nota: Esta é uma implementação de base. Para usar em produção,
-    integre com ChromaDB, Pinecone ou similar.
+    Note: This is a baseline implementation. For production use,
+    integrate with ChromaDB, Pinecone, or similar.
     """
     
     def __init__(self, collection_name: str = "memories"):
         """
-        Inicializa a memória de longo prazo.
+        Initialize long-term memory.
         
         Args:
-            collection_name: Nome da coleção (para organização)
+            collection_name: Name of the collection for organization
         """
         self.collection_name = collection_name
         self._memories: List[Dict] = []
     
     def store(self, content: str, metadata: Optional[Dict] = None) -> str:
         """
-        Armazena uma memória com metadados.
+        Store a memory entry with metadata.
         
         Args:
-            content: Conteúdo a ser armazenado (idealmente um resumo)
-            metadata: Informações adicionais (usuário, tópico, importância, etc)
+            content: Content to store (ideally a summary)
+            metadata: Additional information (user, topic, importance, etc.)
         
         Returns:
-            ID da memória armazenada
+            Stored memory ID
         """
         memory_id = f"mem_{len(self._memories)}_{int(datetime.now().timestamp())}"
         
@@ -53,36 +53,36 @@ class LongTermMemory:
     
     def retrieve_by_topic(self, topic: str) -> List[Dict]:
         """
-        Recupera memórias por tópico (busca simples em metadata).
+        Retrieve memories by topic using simple metadata filtering.
         
         Args:
-            topic: Tópico para filtrar
+            topic: Topic to filter by
         
         Returns:
-            Lista de memórias relacionadas ao tópico
+            List of memory entries for the topic
         """
         results = [
             mem for mem in self._memories 
             if mem.get("metadata", {}).get("topic") == topic
         ]
-        # Incrementa contador de acesso
+        # Increment access counter
         for mem in results:
             mem["accessed_count"] += 1
         return results
     
     def retrieve_all(self) -> List[Dict]:
-        """Recupera todas as memórias armazenadas."""
+        """Retrieve all stored memories."""
         return self._memories.copy()
     
     def retrieve_recent(self, n: int = 10) -> List[Dict]:
         """
-        Recupera as N memórias mais recentes.
+        Retrieve the most recent N memories.
         
         Args:
-            n: Número de memórias a recuperar
+            n: Number of memories to retrieve
         
         Returns:
-            Últimas N memórias (mais recentes primeiro)
+            Last N memories, most recent first
         """
         return sorted(
             self._memories, 
@@ -92,13 +92,13 @@ class LongTermMemory:
     
     def retrieve_most_accessed(self, n: int = 10) -> List[Dict]:
         """
-        Recupera as memórias mais acessadas.
+        Retrieve the most accessed memories.
         
         Args:
-            n: Número de memórias a recuperar
+            n: Number of memories to retrieve
         
         Returns:
-            Memórias mais acessadas (mais relevantes)
+            Most accessed memories (most relevant)
         """
         return sorted(
             self._memories,
@@ -109,15 +109,15 @@ class LongTermMemory:
     def update_memory(self, memory_id: str, new_content: str, 
                      new_metadata: Optional[Dict] = None) -> bool:
         """
-        Atualiza uma memória existente.
+        Update an existing memory.
         
         Args:
-            memory_id: ID da memória a atualizar
-            new_content: Novo conteúdo
-            new_metadata: Novos metadados (merge com existentes)
+            memory_id: ID of the memory to update
+            new_content: New content
+            new_metadata: New metadata to merge with existing values
         
         Returns:
-            True se atualizado com sucesso, False caso contrário
+            True if updated successfully, False otherwise
         """
         for mem in self._memories:
             if mem["id"] == memory_id:
@@ -130,28 +130,28 @@ class LongTermMemory:
     
     def delete_memory(self, memory_id: str) -> bool:
         """
-        Deleta uma memória.
+        Delete a memory.
         
         Args:
-            memory_id: ID da memória a deletar
+            memory_id: ID of the memory to delete
         
         Returns:
-            True se deletado com sucesso, False caso contrário
+            True if deleted successfully, False otherwise
         """
         initial_len = len(self._memories)
         self._memories = [mem for mem in self._memories if mem["id"] != memory_id]
         return len(self._memories) < initial_len
     
     def clear(self):
-        """Limpa todas as memórias armazenadas."""
+        """Clear all stored memories."""
         self._memories = []
     
     def get_stats(self) -> Dict:
         """
-        Retorna estatísticas da memória.
+        Return memory statistics.
         
         Returns:
-            Dicionário com informações sobre o armazenamento
+            Dictionary with storage information
         """
         total_memories = len(self._memories)
         if total_memories == 0:

@@ -1,62 +1,62 @@
-# Guardrails - Camada de Segurança
+# Guardrails - Security Layer
 
-Validações de entrada e saída para proteger o sistema contra abusos, entradas malformadas e outputs inesperados.
+Input and output validation to protect the system from abuse, malformed requests, and unexpected outputs.
 
-## Arquitetura
+## Architecture
 
 ```
 User Input
     ↓
-INPUT_GUARD (validar & sanitizar)
+INPUT_GUARD (validate & sanitize)
     ↓
-Agent/Chain (processamento)
+Agent/Chain (processing)
     ↓
-OUTPUT_GUARD (validar resultado)
+OUTPUT_GUARD (validate result)
     ↓
-Response para Usuário
+Response to User
 ```
 
-## Componentes
+## Components
 
-### input_guard.py - Validação de Entrada
+### input_guard.py - Input Validation
 
-Valida e sanitiza a entrada do usuário **antes** de enviar ao agente.
+Validates and sanitizes user input **before** sending it to the agent.
 
-**Validações Padrão:**
-- ✅ Input não vazio
-- ✅ Limite de tamanho (4000 caracteres)
-- ✅ Sanitização de espaços em branco
+**Default checks:**
+- ✅ Input is not empty
+- ✅ Length limit (4000 characters)
+- ✅ Whitespace sanitization
 
-**Exemplo:**
+**Example:**
 
 ```python
 from src.core.guardrails.input_guard import validate_input, InputValidationError
 
 try:
-    clean_input = validate_input("Qual é a capital do Brasil?")
-    print(clean_input)  # "Qual é a capital do Brasil?"
+    clean_input = validate_input("What is the capital of Brazil?")
+    print(clean_input)  # "What is the capital of Brazil?"
 except InputValidationError as e:
-    print(f"Erro de validação: {e}")
+    print(f"Validation error: {e}")
 ```
 
-### output_guard.py - Validação de Saída
+### output_guard.py - Output Validation
 
-Valida a resposta do agente **antes** de retornar ao usuário.
+Validates the agent response **before** returning it to the user.
 
-**Validações Padrão:**
-- ✅ Output não vazio
-- ✅ Sanitização de espaços em branco
+**Default checks:**
+- ✅ Output is not empty
+- ✅ Whitespace sanitization
 
-**Exemplo:**
+**Example:**
 
 ```python
 from src.core.guardrails.output_guard import validate_output
 
-response = validate_output("  Resposta do agente  ")
-print(response)  # "Resposta do agente"
+response = validate_output("  Agent response  ")
+print(response)  # "Agent response"
 ```
 
-## Usando com Agent/Chain
+## Using with Agent/Chain
 
 ```python
 from src.core.agents.base_agent import BaseAgent
@@ -66,34 +66,34 @@ client = Anthropic()
 agent = BaseAgent(client)
 
 try:
-    # Input já é validado dentro de agent.run()
-    response = agent.run("sua tarefa")
+    # Input is already validated inside agent.run()
+    response = agent.run("your task")
     print(response)
 except InputValidationError as e:
-    print(f"Erro de validação: {e}")
+    print(f"Validation error: {e}")
 ```
 
-## Expandindo Guardrails
+## Extending Guardrails
 
-### Pattern 1: Validação de Conteúdo Proibido
+### Pattern 1: Banned Content Validation
 
 ```python
 # input_guard.py
-BANNED_TOPICS = {"crack", "drogas", "exploit"}
+BANNED_TOPICS = {"crack", "drugs", "exploit"}
 
 def check_banned_topics(text: str) -> bool:
-    """Verifica se input contém tópicos proibidos."""
+    """Checks whether the input contains banned topics."""
     text_lower = text.lower()
     return any(topic in text_lower for topic in BANNED_TOPICS)
 
 def validate_input(text: str) -> str:
-    # Validações existentes...
+    # Existing validations...
     if check_banned_topics(text):
-        raise InputValidationError("Topico nao permitido.")
+        raise InputValidationError("Topic not allowed.")
     return text.strip()
 ```
 
-### Pattern 2: Detecção de Prompt Injection
+### Pattern 2: Prompt Injection Detection
 
 ```python
 # input_guard.py
@@ -107,7 +107,7 @@ INJECTION_PATTERNS = [
 ]
 
 def detect_prompt_injection(text: str) -> bool:
-    """Detecta tentativas de prompt injection."""
+    """Detects prompt injection attempts."""
     for pattern in INJECTION_PATTERNS:
         if re.search(pattern, text, re.IGNORECASE):
             return True
@@ -115,11 +115,9 @@ def detect_prompt_injection(text: str) -> bool:
 
 def validate_input(text: str) -> str:
     if detect_prompt_injection(text):
-        raise InputValidationError("Possível tentativa de prompt injection detectada.")
+        raise InputValidationError("Possible prompt injection attempt detected.")
     return text.strip()
-```
-
-### Pattern 3: Validação de JSON na Saída
+### Pattern 3: JSON Output Validation
 
 ```python
 # output_guard.py
@@ -127,23 +125,23 @@ import json
 import re
 
 def validate_json_output(text: str) -> dict:
-    """Extrai e valida JSON da saída."""
-    # Tenta encontrar JSON no texto
+    """Extracts and validates JSON from the output."""
+    # Try to find JSON in the text
     json_match = re.search(r'\{[^{}]*\}', text)
     if not json_match:
-        raise ValueError("Nenhum JSON encontrado na resposta")
+        raise ValueError("No JSON found in the response")
     
     try:
         data = json.loads(json_match.group())
         return data
     except json.JSONDecodeError as e:
-        raise ValueError(f"JSON inválido: {e}")
+        raise ValueError(f"Invalid JSON: {e}")
 
 def validate_output(text: str) -> dict:
     return validate_json_output(text)
 ```
 
-### Pattern 4: Rate Limiting por Usuário
+### Pattern 4: User Rate Limiting
 
 ```python
 # guardrails/rate_limit.py
@@ -158,7 +156,7 @@ class RateLimiter:
     
     def is_allowed(self, user_id: str) -> bool:
         now = time()
-        # Remove requests antigos
+        # Remove old requests
         self.requests[user_id] = [
             t for t in self.requests[user_id]
             if now - t < self.window_seconds
@@ -170,15 +168,15 @@ class RateLimiter:
         self.requests[user_id].append(now)
         return True
 
-# Usar
+# Usage
 rate_limiter = RateLimiter(max_requests=10, window_seconds=60)
 
 def validate_rate_limit(user_id: str):
     if not rate_limiter.is_allowed(user_id):
-        raise InputValidationError("Limite de requisições atingido. Tente novamente mais tarde.")
+        raise InputValidationError("Request limit reached. Please try again later.")
 ```
 
-### Pattern 5: Validação de Schema na Saída
+### Pattern 5: Output Schema Validation
 
 ```python
 # output_guard.py
@@ -195,15 +193,15 @@ EXPECTED_OUTPUT_SCHEMA = {
 }
 
 def validate_schema(data: dict) -> dict:
-    """Valida dados contra schema esperado."""
+    """Validates data against the expected schema."""
     try:
         validate(instance=data, schema=EXPECTED_OUTPUT_SCHEMA)
         return data
     except ValidationError as e:
-        raise ValueError(f"Schema inválido: {e.message}")
+        raise ValueError(f"Invalid schema: {e.message}")
 ```
 
-### Pattern 6: Sanitização Avançada
+### Pattern 6: Advanced Sanitization
 
 ```python
 # input_guard.py
@@ -211,35 +209,35 @@ import html
 import re
 
 def sanitize_html(text: str) -> str:
-    """Remove tags HTML perigosas."""
+    """Removes dangerous HTML tags."""
     # Remove scripts
     text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.IGNORECASE)
-    # Escapa caracteres HTML
+    # Escape HTML characters
     text = html.escape(text)
     return text
 
 def sanitize_sql(text: str) -> str:
-    """Detecta possíveis SQL injection patterns."""
+    """Detects possible SQL injection patterns."""
     dangerous_patterns = [r"DROP\s+TABLE", r"DELETE\s+FROM", r"UNION\s+SELECT"]
     for pattern in dangerous_patterns:
         if re.search(pattern, text, re.IGNORECASE):
-            raise InputValidationError("Padrão SQL perigoso detectado.")
+            raise InputValidationError("Dangerous SQL pattern detected.")
     return text
 
 def validate_input(text: str) -> str:
     text = sanitize_html(text)
     text = sanitize_sql(text)
-    # ... outras validações ...
+    # ... other validations ...
     return text.strip()
 ```
 
-## Composição de Guardrails
+## Guardrails Composition
 
 ```python
 # guardrails/composite_guard.py
 
 class CompositeInputGuard:
-    """Aplica múltiplas validações em sequência."""
+    """Applies multiple validators in sequence."""
     
     def __init__(self):
         self.validators = []
@@ -253,7 +251,7 @@ class CompositeInputGuard:
             text = validator(text)
         return text
 
-# Usar
+# Usage
 guard = CompositeInputGuard()
 guard.add_validator(check_length)
 guard.add_validator(check_banned_topics)
@@ -263,24 +261,24 @@ guard.add_validator(sanitize_html)
 clean_input = guard.validate(user_input)
 ```
 
-## Boas Práticas
+## Best Practices
 
-✅ **Faça:**
-- Valide entrada **sempre** antes de processar
-- Valide saída **antes** de retornar ao usuário
-- Use exceções específicas (InputValidationError, etc)
-- Registre tentativas de validação falhada (para auditing)
-- Configure limites adequados ao seu caso de uso
-- Teste guardrails com casos adversários
+✅ **Do:**
+- Validate input **always** before processing
+- Validate output **before** returning to the user
+- Use specific exceptions (InputValidationError, etc.)
+- Log failed validation attempts (for auditing)
+- Configure limits appropriate for your use case
+- Test guardrails with adversarial examples
 
-❌ **Evite:**
-- Confiar em validação do lado do cliente
-- Guardrails muito restritivos (afetam UX)
-- Expor detalhes técnicos em mensagens de erro
-- Sem logging de tentativas suspeitas
+❌ **Avoid:**
+- Relying on client-side validation
+- Guardrails that are too restrictive (hurt UX)
+- Exposing technical details in error messages
+- Missing logging for suspicious attempts
 - Hard-coded constraints (use env vars)
 
-## Configuração por Ambiente
+## Environment Configuration
 
 ```python
 # config.py
@@ -298,18 +296,18 @@ ENABLE_INJECTION_DETECTION=true
 RATE_LIMIT_PER_MINUTE=10
 ```
 
-## Exemplos de Casos de Uso
+## Use Cases
 
-### 1. Chatbot Público (MVP)
+### 1. Public Chatbot (MVP)
 ```python
-# Validações básicas
+# Basic validations
 - ✅ Check length
 - ✅ Check empty
 ```
 
-### 2. Chatbot em Produção
+### 2. Production Chatbot
 ```python
-# Validações intermediárias
+# Intermediate validations
 - ✅ Check length
 - ✅ Check empty
 - ✅ Check banned topics
@@ -317,9 +315,9 @@ RATE_LIMIT_PER_MINUTE=10
 - ✅ Rate limiting
 ```
 
-### 3. Assistente Pessoal (Seguro)
+### 3. Secure Personal Assistant
 ```python
-# Validações completas
+# Full validations
 - ✅ Check length
 - ✅ Check empty
 - ✅ Check banned topics
@@ -330,7 +328,7 @@ RATE_LIMIT_PER_MINUTE=10
 - ✅ Content classification
 ```
 
-## Testando Guardrails
+## Testing Guardrails
 
 ```python
 # tests/test_guardrails.py
@@ -352,25 +350,25 @@ def test_prompt_injection():
         validate_input(suspicious)
 
 def test_valid_input():
-    clean = validate_input("Qual é a capital do Brasil?")
-    assert clean == "Qual é a capital do Brasil?"
+    clean = validate_input("What is the capital of Brazil?")
+    assert clean == "What is the capital of Brazil?"
 ```
 
 ## Troubleshooting
 
-| Problema | Causa | Solução |
-|----------|-------|---------|
-| Input rejeitado indevidamente | Guardrails muito restritivos | Afrouxar limites/padrões |
-| Prompt injection não detectada | Padrão incompleto | Adicionar mais padrões |
-| Falsos positivos | Regex muito genérico | Refinar padrões |
-| Performance degradada | Muitas validações | Otimizar ou cache |
+| Problem | Cause | Fix |
+|----------|-------|-----|
+| Input rejected incorrectly | Guardrails too restrictive | Loosen limits/patterns |
+| Prompt injection not detected | Incomplete pattern | Add more patterns |
+| False positives | Regex too generic | Refine patterns |
+| Performance degraded | Too many validations | Optimize or cache |
 
-## Próximos Passos
+## Next Steps
 
-- [ ] Implementar rate limiting por usuário
-- [ ] Adicionar detecção de prompt injection
-- [ ] Criar lista de tópicos proibidos
-- [ ] Implementar logging de tentativas suspeitas
-- [ ] Adicionar testes de segurança
-- [ ] Integrar com sistemas de auditing
+- [ ] Implement user rate limiting
+- [ ] Add prompt injection detection
+- [ ] Create a banned topics list
+- [ ] Add logging for suspicious attempts
+- [ ] Add security tests
+- [ ] Integrate with auditing systems
 

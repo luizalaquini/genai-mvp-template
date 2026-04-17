@@ -1,35 +1,35 @@
-# Tools - Ferramentas para Agentes
+# Tools - Agent Tools
 
-Registro central de ferramentas que agentes podem chamar para executar ações.
+Central tool registry that agents can call to execute actions.
 
-## Arquitetura
+## Architecture
 
 ```
-Agent precisa de uma ação
+Agent needs an action
     ↓
-Consulta TOOL_REGISTRY
+Lookup TOOL_REGISTRY
     ↓
-Executa ferramenta com parâmetros
+Execute tool with parameters
     ↓
-Retorna resultado para Agent
+Return result to Agent
     ↓
-Agent observa e continua
+Agent observes and continues
 ```
 
-## Estrutura de Pastas
+## Folder Structure
 
 ```
 src/core/tools/
-├── example_tools.py      # Implementação de ferramentas
-├── registry.py           # Registro central (TOOL_REGISTRY, TOOL_DEFINITIONS)
+├── example_tools.py      # Tool implementations
+├── registry.py           # Central registry (TOOL_REGISTRY, TOOL_DEFINITIONS)
 └── README.md
 ```
 
-## Como Funciona
+## How It Works
 
-### 1. registry.py - Registro Central
+### 1. registry.py - Central Registry
 
-Define as ferramentas disponíveis em **dois formatos:**
+Defines available tools in **two formats:**
 
 **a) TOOL_REGISTRY** (Python)
 ```python
@@ -39,12 +39,12 @@ TOOL_REGISTRY = {
 }
 ```
 
-**b) TOOL_DEFINITIONS** (API Anthropic)
+**b) TOOL_DEFINITIONS** (Anthropic API)
 ```python
 TOOL_DEFINITIONS = [
     {
         "name": "get_current_date",
-        "description": "Retorna a data atual",
+        "description": "Returns the current date",
         "input_schema": {
             "type": "object",
             "properties": {},
@@ -55,28 +55,28 @@ TOOL_DEFINITIONS = [
 ]
 ```
 
-### 2. example_tools.py - Implementação
+### 2. example_tools.py - Implementation
 
 ```python
 def get_current_date() -> dict:
-    """Retorna a data atual."""
+    """Returns the current date."""
     return {"date": date.today().isoformat()}
 
 def search_web(query: str) -> dict:
-    """Busca informações na web."""
-    # Implementar com API real
+    """Searches the web for information."""
+    # Implement with a real API
     return {"results": [...]}
 ```
 
-## Adicionando uma Ferramenta
+## Adding a New Tool
 
-### Passo 1: Implementar a Função
+### Step 1: Implement the Function
 
 ```python
 # src/core/tools/example_tools.py
 
 def calculate_discount(price: float, discount_percent: float) -> dict:
-    """Calcula o preço com desconto aplicado."""
+    """Calculates the final price after a discount."""
     final_price = price * (1 - discount_percent / 100)
     return {
         "original_price": price,
@@ -86,7 +86,7 @@ def calculate_discount(price: float, discount_percent: float) -> dict:
     }
 ```
 
-### Passo 2: Importar e Registrar em registry.py
+### Step 2: Import and Register in registry.py
 
 ```python
 # src/core/tools/registry.py
@@ -94,32 +94,32 @@ def calculate_discount(price: float, discount_percent: float) -> dict:
 from src.core.tools.example_tools import (
     get_current_date,
     search_web,
-    calculate_discount  # Nova ferramenta
+    calculate_discount  # New tool
 )
 
-# Mapa Python
+# Python map
 TOOL_REGISTRY = {
     "get_current_date": get_current_date,
     "search_web": search_web,
-    "calculate_discount": calculate_discount,  # Adicionar aqui
+    "calculate_discount": calculate_discount,
 }
 
-# Definições para API
+# API definitions
 TOOL_DEFINITIONS = [
     # ... existing tools ...
     {
         "name": "calculate_discount",
-        "description": "Calcula o preço final com desconto aplicado",
+        "description": "Calculates the final price with discount applied",
         "input_schema": {
             "type": "object",
             "properties": {
                 "price": {
                     "type": "number",
-                    "description": "Preço original"
+                    "description": "Original price"
                 },
                 "discount_percent": {
                     "type": "number",
-                    "description": "Percentual de desconto (0-100)"
+                    "description": "Discount percentage (0-100)"
                 }
             },
             "required": ["price", "discount_percent"]
@@ -128,7 +128,7 @@ TOOL_DEFINITIONS = [
 ]
 ```
 
-### Passo 3: Usar com Agent
+### Step 3: Use with the Agent
 
 ```python
 from src.core.agents.base_agent import BaseAgent
@@ -137,29 +137,29 @@ from anthropic import Anthropic
 client = Anthropic()
 agent = BaseAgent(client)
 
-# Agent usa a ferramenta automaticamente
-response = agent.run("Qual é o preço final se um produto custa R$100 com 20% de desconto?")
+# The agent will use the tool automatically
+response = agent.run("What is the final price if a product costs $100 with a 20% discount?")
 print(response)
-# Saída: Agent vai chamar calculate_discount(100, 20) e obter R$80
+# Output: Agent will call calculate_discount(100, 20) and return $80
 ```
 
-## Exemplos de Ferramentas
+## Tool Examples
 
-### 1. Ferramenta Simples (sem parâmetros)
+### 1. Simple Tool (no parameters)
 
 ```python
 def get_current_date() -> dict:
-    """Retorna a data atual."""
+    """Returns the current date."""
     from datetime import date
     return {"date": date.today().isoformat()}
 ```
 
-### 2. Ferramenta com Parâmetros
+### 2. Tool with Parameters
 
 ```python
 def search_web(query: str, max_results: int = 5) -> dict:
-    """Busca na web usando API externa."""
-    # Integrar com Tavily, SerpAPI, Brave Search...
+    """Searches the web using an external API."""
+    # Integrate with Tavily, SerpAPI, Brave Search...
     return {
         "query": query,
         "results": [...],
@@ -167,11 +167,11 @@ def search_web(query: str, max_results: int = 5) -> dict:
     }
 ```
 
-### 3. Ferramenta com Lógica Complexa
+### 3. Tool with Complex Logic
 
 ```python
 def analyze_sentiment(text: str) -> dict:
-    """Analisa sentimento usando modelo de IA."""
+    """Analyzes sentiment using an AI model."""
     from transformers import pipeline
     
     classifier = pipeline("sentiment-analysis")
@@ -184,11 +184,11 @@ def analyze_sentiment(text: str) -> dict:
     }
 ```
 
-### 4. Ferramenta com API Externa
+### 4. Tool with External API
 
 ```python
 def fetch_weather(city: str) -> dict:
-    """Busca previsão do tempo."""
+    """Fetches weather forecast."""
     import requests
     
     api_key = os.getenv("WEATHER_API_KEY")
@@ -203,11 +203,11 @@ def fetch_weather(city: str) -> dict:
     return response.json()
 ```
 
-### 5. Ferramenta com Banco de Dados
+### 5. Tool with Database Access
 
 ```python
 def get_user_preferences(user_id: int) -> dict:
-    """Recupera preferências do usuário do banco de dados."""
+    """Retrieves user preferences from the database."""
     import sqlite3
     
     conn = sqlite3.connect("database.db")
@@ -223,136 +223,133 @@ def get_user_preferences(user_id: int) -> dict:
     }
 ```
 
-## Boas Práticas
+## Best Practices
 
-### ✅ Faça:
+### ✅ Do:
 
-1. **Retorne sempre um dict/JSON**
+1. **Always return a dict/JSON**
    ```python
-   # ✅ Bom
+   # ✅ Good
    return {"success": True, "value": 42}
    
-   # ❌ Ruim
-   return "O resultado é 42"
+   # ❌ Bad
+   return "The result is 42"
    ```
 
-2. **Use nomes descritivos**
+2. **Use descriptive names**
    ```python
-   # ✅ Bom
-   def calculate_monthly_revenue(company_id: int) -> dict:
+   # ✅ Good
+def calculate_monthly_revenue(company_id: int) -> dict:
    
-   # ❌ Ruim
-   def calc(id):
+   # ❌ Bad
+def calc(id):
    ```
 
-3. **Documente com docstrings**
+3. **Document with docstrings**
    ```python
-   def get_weather(city: str) -> dict:
-       """
-       Retorna condições atuais do tempo para uma cidade.
-       
-       Args:
-           city: Nome da cidade (ex: "São Paulo")
-       
-       Returns:
-           Dict com temperatura, umidade, etc
-       """
-   ```
+def get_weather(city: str) -> dict:
+    """
+    Returns current weather conditions for a city.
+    
+    Args:
+        city: City name (e.g. "São Paulo")
+    
+    Returns:
+        Dict with temperature, humidity, etc.
+    """
+```
 
-4. **Trate erros adequadamente**
+4. **Handle errors properly**
    ```python
-   def fetch_api(url: str) -> dict:
-       try:
-           response = requests.get(url, timeout=5)
-           return response.json()
-       except requests.RequestException as e:
-           return {"error": str(e), "url": url}
-   ```
+def fetch_api(url: str) -> dict:
+    try:
+        response = requests.get(url, timeout=5)
+        return response.json()
+    except requests.RequestException as e:
+        return {"error": str(e), "url": url}
+```
 
 5. **Use type hints**
    ```python
-   def process(data: list[str], threshold: float = 0.5) -> dict:
-       pass
-   ```
+def process(data: list[str], threshold: float = 0.5) -> dict:
+    pass
+```
 
-### ❌ Evite:
+### ❌ Avoid:
 
-1. **Não use print() - retorne dados**
+1. **Using print() instead of returning data**
    ```python
-   # ❌ Ruim
-   def tool():
-       print("Resultado")
+   # ❌ Bad
+def tool():
+       print("Result")
    
-   # ✅ Bom
-   def tool():
-       return {"result": "Resultado"}
+   # ✅ Good
+def tool():
+       return {"result": "Result"}
    ```
 
-2. **Não deixe sem tratamento de erro**
+2. **Leaving errors unhandled**
    ```python
-   # ❌ Ruim
-   def fetch_api(url):
+   # ❌ Bad
+def fetch_api(url):
        return requests.get(url).json()
    
-   # ✅ Bom
-   def fetch_api(url):
+   # ✅ Good
+def fetch_api(url):
        try:
            return requests.get(url).json()
        except Exception as e:
            return {"error": str(e)}
-   ```
+```
 
-3. **Não modifique estado global**
+3. **Modifying global state**
    ```python
-   # ❌ Ruim
-   global_cache = {}
+   # ❌ Bad
+global_cache = {}
    
    def tool():
        global_cache["key"] = "value"
    
-   # ✅ Bom
-   def tool():
+   # ✅ Good
+def tool():
        return {"key": "value"}
-   ```
+```
 
-## Padrões Avançados
+## Advanced Patterns
 
-### Pattern 1: Tool com Fallback
+### Pattern 1: Tool with Fallback
 
 ```python
 def search_information(query: str) -> dict:
-    """Busca info com fallback."""
+    """Searches with fallback."""
     try:
-        # Tenta API primária
         return search_api_primary(query)
     except:
         try:
-            # Fallback para API secundária
             return search_api_secondary(query)
         except:
-            # Último recurso - busca local
             return search_local_cache(query)
 ```
 
-### Pattern 2: Tool com Cache
+### Pattern 2: Tool with Cache
 
 ```python
 from functools import lru_cache
 
 @lru_cache(maxsize=100)
 def expensive_calculation(x: int) -> dict:
-    """Cálculo custoso com cache."""
+    """Expensive calculation with caching."""
     result = sum(i**2 for i in range(x))
     return {"input": x, "result": result}
 ```
 
-### Pattern 3: Tool Assíncrona
+### Pattern 3: Async Tool
 
 ```python
 import asyncio
 
 async def fetch_multiple_sources(query: str) -> dict:
-    """Busca de múltiplas fontes em paralelo."""
+    """Fetches multiple sources in parallel."""
     tasks = [
         search_source_a(query),
         search_source_b(query),
@@ -362,7 +359,7 @@ async def fetch_multiple_sources(query: str) -> dict:
     return {"query": query, "sources": results}
 ```
 
-### Pattern 4: Tool com Rate Limiting
+### Pattern 4: Rate-limited Tool
 
 ```python
 import time
@@ -389,7 +386,7 @@ def api_call(endpoint: str) -> dict:
     pass
 ```
 
-## Testando Ferramentas
+## Testing Tools
 
 ```python
 # test_tools.py
@@ -401,20 +398,18 @@ def test_calculate_discount():
     assert result["savings"] == 20
 ```
 
-## Integração com Verificação de Segurança
+## Integration with Security Checks
 
-Se quiser validar que ferramentas não fazem nada suspeito:
+If you want to validate that tools do not perform suspicious actions:
 
 ```python
 # src/core/guardrails/tool_guard.py
 def validate_tool_call(tool_name: str, inputs: dict) -> bool:
-    """Valida se a chamada de ferramenta é permitida."""
-    # Previne tools perigosas
+    """Validates whether the tool call is allowed."""
     blocked_tools = ["delete_database", "execute_shell"]
     if tool_name in blocked_tools:
         return False
     
-    # Valida parâmetros
     if tool_name == "search_web" and len(inputs.get("query", "")) > 500:
         return False
     
@@ -423,18 +418,18 @@ def validate_tool_call(tool_name: str, inputs: dict) -> bool:
 
 ## Troubleshooting
 
-| Problema | Causa | Solução |
+| Problem | Cause | Fix |
 |----------|-------|---------|
-| Tool não encontrada | Não registrada em registry | Adicionar a TOOL_REGISTRY |
-| Erro ao executar | Parâmetros incorretos | Verificar input_schema |
-| Timeout | Tool muito lenta | Adicionar cache ou async |
-| Agent não usa tool | Output não é dict | Retornar sempre dict |
+| Tool not found | Not registered in registry | Add it to TOOL_REGISTRY |
+| Execution error | Incorrect parameters | Check input_schema |
+| Timeout | Tool too slow | Add caching or async behavior |
+| Agent does not use tool | Output is not a dict | Always return a dict |
 
-## Próximos Passos
+## Next Steps
 
-- [ ] Implementar ferramentas específicas do seu caso de uso
-- [ ] Adicionar busca web com API real (Tavily, SerpAPI)
-- [ ] Integrar com banco de dados
-- [ ] Implementar rate limiting
-- [ ] Adicionar caching
-- [ ] Criar testes para ferramentas
+- [ ] Implement tools for your use case
+- [ ] Add real web search with API integration (Tavily, SerpAPI)
+- [ ] Integrate with a database
+- [ ] Implement rate limiting
+- [ ] Add caching
+- [ ] Create tests for tools

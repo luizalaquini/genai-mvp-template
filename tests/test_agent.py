@@ -1,4 +1,4 @@
-"""Testes do agente base."""
+"""Base agent tests."""
 from unittest.mock import MagicMock
 from src.core.agents.base_agent import BaseAgent
 from src.core.guardrails.input_guard import validate_input, InputValidationError
@@ -6,7 +6,7 @@ import pytest
 
 
 def test_validate_input_ok():
-    assert validate_input("Olá, tudo bem?") == "Olá, tudo bem?"
+    assert validate_input("Hello, how are you?") == "Hello, how are you?"
 
 
 def test_validate_input_empty():

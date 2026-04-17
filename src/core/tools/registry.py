@@ -1,29 +1,29 @@
 """
-Registro central de ferramentas.
-Adicione novas tools aqui para que o agente possa usa-las.
+Central tool registry.
+Add new tools here so the agent can use them.
 """
 from src.core.tools.example_tools import get_current_date, search_web
 
-# Mapa nome -> funcao
+# Map name -> function
 TOOL_REGISTRY = {
     "get_current_date": get_current_date,
     "search_web": search_web,
 }
 
-# Definicoes no formato Anthropic tool_use
+# Anthropic tool_use definitions
 TOOL_DEFINITIONS = [
     {
         "name": "get_current_date",
-        "description": "Retorna a data atual.",
+        "description": "Returns the current date.",
         "input_schema": {"type": "object", "properties": {}, "required": []},
     },
     {
         "name": "search_web",
-        "description": "Busca informacoes na web sobre um topico.",
+        "description": "Searches the web for information on a topic.",
         "input_schema": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Termo de busca"}
+                "query": {"type": "string", "description": "Search query"}
             },
             "required": ["query"],
         },

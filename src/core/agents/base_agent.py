@@ -1,12 +1,12 @@
 """
-Agente base com loop ReAct (Reason + Act).
+Base agent with a ReAct loop (Reason + Act).
 
-Fluxo:
-  1. Recebe task
-  2. Raciocina qual tool usar (ou se ja tem a resposta)
-  3. Executa a tool
-  4. Observa o resultado
-  5. Repete ate concluir ou atingir max_iterations
+Flow:
+  1. Receive task
+  2. Decide which tool to use (or if it already has the answer)
+  3. Execute the tool
+  4. Observe the result
+  5. Repeat until completion or max_iterations
 """
 import json
 from src.core.memory.buffer_memory import BufferMemory
@@ -58,17 +58,17 @@ class BaseAgent:
     def _execute_tool(self, name: str, inputs: dict):
         fn = TOOL_REGISTRY.get(name)
         if not fn:
-            return f"Tool '{name}' nao encontrada."
+            return f"Tool '{name}' not found."
         try:
             return fn(**inputs)
         except Exception as e:
-            return f"Erro ao executar '{name}': {e}"
+            return f"Error executing '{name}': {e}"
 
     def _system_prompt(self) -> str:
         return (
-            "Voce e um agente que resolve tarefas passo a passo. "
-            "Use as ferramentas disponiveis quando necessario. "
-            "Quando tiver a resposta final, responda diretamente sem chamar ferramentas."
+            "You are an agent that solves tasks step by step. "
+            "Use available tools when needed. "
+            "When you have the final answer, respond directly without calling tools."
         )
 
 

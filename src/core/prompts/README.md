@@ -1,93 +1,93 @@
-# Prompts - Templates Versionados
+# Prompts - Versioned Templates
 
-Biblioteca centralizada de prompts para agentes e chains, com versionamento manual e controle de qualidade.
+Centralized library of prompts for agents and chains, with manual versioning and quality control.
 
-## Filosofia
+## Philosophy
 
-- ✅ Prompts em **arquivos** (não hardcoded)
-- ✅ Versionamento manual para rastreabilidade
-- ✅ Templates com placeholders para reutilização
-- ✅ Versões diferentes para A/B testing
-- ✅ Documentação de cada versão
+- ✅ Prompts in **files** (not hardcoded)
+- ✅ Manual versioning for traceability
+- ✅ Templates with placeholders for reuse
+- ✅ Different versions for A/B testing
+- ✅ Documentation for each version
 
-## Convenção de Nomes
-
-```
-{nome_descritivo}_v{major}.{minor}.txt
-```
-
-**Exemplos:**
-- `base_prompt_v1.0.txt` - Versão inicial
-- `base_prompt_v1.1.txt` - Pequeno ajuste
-- `base_prompt_v2.0.txt` - Mudança significativa
-- `summarize_v1.0.txt` - Novo prompt
-- `classify_sentiment_v1.0.txt` - Outro prompt
-
-**Quando incrementar versão:**
-- `major++`: Mudança de abordagem/instruções principais
-- `minor++`: Ajuste de phrasing/clareza
-
-## Estrutura de um Prompt
+## Naming Convention
 
 ```
-# Prompt: {nome}
-# Versão: {major}.{minor}
-# Descrição: O que este prompt faz
+{descriptive_name}_v{major}.{minor}.txt
+```
+
+**Examples:**
+- `base_prompt_v1.0.txt` - Initial version
+- `base_prompt_v1.1.txt` - Minor adjustment
+- `base_prompt_v2.0.txt` - Significant change
+- `summarize_v1.0.txt` - New prompt
+- `classify_sentiment_v1.0.txt` - Another prompt
+
+**When to bump versions:**
+- `major++`: Change in approach / core instructions
+- `minor++`: Wording or clarity improvement
+
+## Prompt Structure
+
+```
+# Prompt: {name}
+# Version: {major}.{minor}
+# Description: What this prompt does
 
 ## System
-[Instruções para o modelo agir como]
+[Instructions for model behavior]
 
-## Instruções
-[Passos específicos]
+## Instructions
+[Specific steps]
 
-## Formato de Resposta
-[Como formatar a saída]
+## Response Format
+[How to format the output]
 
-## Exemplos (opcional)
-[Exemplos de input/output]
+## Examples (optional)
+[Input/output examples]
 
-## Variáveis
-- {variavel_1}: Descrição
-- {variavel_2}: Descrição
+## Variables
+- {variable_1}: Description
+- {variable_2}: Description
 ```
 
-## Exemplo Completo
+## Full Example
 
 ```txt
 # Prompt: summarize
-# Versão: 1.0
-# Descrição: Sumariza textos longos mantendo pontos-chave
+# Version: 1.0
+# Description: Summarizes long texts while keeping the main points
 
 ## System
-Você é um especialista em síntese e resumo de conteúdo.
-Seu objetivo é extrair as informações mais importantes de forma concisa.
-Sempre responda em {language}.
+You are an expert in synthesis and summarization.
+Your goal is to extract the most important information concisely.
+Always respond in {language}.
 
-## Instruções
-1. Identifique os 3-5 pontos principais do texto
-2. Elimine redundâncias e detalhes secundários
-3. Mantenha a clareza e coesão
-4. Use linguagem direta e profissional
+## Instructions
+1. Identify the 3-5 main points of the text
+2. Remove redundancies and secondary details
+3. Keep the output clear and cohesive
+4. Use direct, professional language
 
-## Formato de Resposta
-Use bullet points, máximo {max_words} palavras.
+## Response Format
+Use bullet points, maximum {max_words} words.
 
-## Exemplos
-INPUT: "A inteligência artificial é uma área da ciência da computação que busca..."
+## Examples
+INPUT: "Artificial intelligence is a field of computer science that aims..."
 OUTPUT:
-• IA é uma área da ciência da computação
-• Busca simular inteligência humana
-• Aplicações práticas em diversos setores
+• AI is a field of computer science
+• It aims to simulate human intelligence
+• Practical applications across multiple sectors
 
-## Variáveis
-- {language}: Idioma de resposta (padrão: português)
-- {max_words}: Limite de palavras (padrão: 150)
-- {tone}: Tom (formal, casual, técnico)
+## Variables
+- {language}: Response language (default: English)
+- {max_words}: Word limit (default: 150)
+- {tone}: Tone (formal, casual, technical)
 ```
 
-## Usando Prompts
+## Using Prompts
 
-### Com Chains
+### With Chains
 
 ```python
 from src.core.chains.base_chain import run_chain
@@ -95,20 +95,20 @@ from anthropic import Anthropic
 
 client = Anthropic()
 
-# Carrega base_prompt_v1.0.txt automaticamente
+# Loads base_prompt_v1.0.txt automatically
 response = run_chain(
-    user_input="Seu texto aqui",
+    user_input="Your text here",
     model_client=client,
     variables={
         "domain": "data science",
-        "instruction_1": "Seja objetivo",
-        "instruction_2": "Use exemplos",
+        "instruction_1": "Be concise",
+        "instruction_2": "Use examples",
         "output_format": "JSON"
     }
 )
 ```
 
-### Com Agents
+### With Agents
 
 ```python
 from src.core.agents.base_agent import BaseAgent
@@ -120,24 +120,24 @@ class CustomAgent(BaseAgent):
         template = prompt_path.read_text()
         
         return template.format(
-            domain="assistência técnica",
-            instruction_1="Use linguagem clara",
-            instruction_2="Ofereça soluções práticas"
+            domain="technical support",
+            instruction_1="Use clear language",
+            instruction_2="Provide practical solutions"
         )
 ```
 
-## Gerenciamento de Prompts
+## Prompt Management
 
-### Criando um Novo Prompt
+### Creating a New Prompt
 
-1. Defina um nome descritivo: `analyze_sentiment_v1.0.txt`
-2. Estruture com as seções padrão
-3. Documente variáveis usadas
-4. Teste com casos variados
-5. Guarde no versionamento
+1. Pick a descriptive name: `analyze_sentiment_v1.0.txt`
+2. Structure it with the standard sections
+3. Document the variables used
+4. Test with varied cases
+5. Commit it to version control
 
 ```bash
-# Estrutura
+# Structure
 src/core/prompts/
 ├── base_prompt_v1.0.txt
 ├── base_prompt_v1.1.txt
@@ -147,17 +147,17 @@ src/core/prompts/
 └── README.md
 ```
 
-### A/B Testing de Prompts
+### Prompt A/B Testing
 
 ```python
-# Testar diferentes versões
+# Test different versions
 def test_prompt_versions():
     from pathlib import Path
     
     versions = [
-        ("base_prompt_v1.0.txt", "Versão original"),
-        ("base_prompt_v1.1.txt", "Com exemplos"),
-        ("base_prompt_v2.0.txt", "Novo template"),
+        ("base_prompt_v1.0.txt", "Original version"),
+        ("base_prompt_v1.1.txt", "With examples"),
+        ("base_prompt_v2.0.txt", "New template"),
     ]
     
     for version, desc in versions:
@@ -174,73 +174,73 @@ def test_prompt_versions():
         print(f"{desc}: {result.content[0].text[:100]}...")
 ```
 
-## Padrões de Prompts
+## Prompt Patterns
 
 ### Pattern 1: Role-Playing
 
 ```txt
 # Prompt: expert_analyst
-# Versão: 1.0
+# Version: 1.0
 
 ## System
-Você é um analista especializado em {domain}.
-Com {years_of_experience} anos de experiência na área.
-Você é conhecido por explicações claras e insights profundos.
+You are a specialist analyst in {domain}.
+With {years_of_experience} years of experience in the field.
+You are known for clear explanations and deep insights.
 
-## Instruções
-1. Analise o seguinte texto/dados
-2. Identifique padrões principais
-3. Sugira ações recomendadas
+## Instructions
+1. Analyze the following text/data
+2. Identify main patterns
+3. Suggest recommended actions
 
-## Formato
-Estruture a resposta em: Análise | Padrões | Recomendações
+## Format
+Structure the answer as: Analysis | Patterns | Recommendations
 ```
 
 ### Pattern 2: Chain-of-Thought
 
 ```txt
 # Prompt: reasoning
-# Versão: 1.0
+# Version: 1.0
 
 ## System
-Você é um pensador lógico e estruturado.
-Sempre mostra seu raciocínio passo a passo.
+You are a logical, structured thinker.
+Always show your reasoning step by step.
 
-## Instruções
-1. Apresente o problema
-2. Quebre em sub-problemas
-3. Resolva cada um
-4. Combine para solução final
+## Instructions
+1. Present the problem
+2. Break it into sub-problems
+3. Solve each one
+4. Combine them into a final solution
 
-## Formato
-Use este template:
-PROBLEMA: [...]
-SUB-PROBLEMAS: [...]
-SOLUÇÕES: [...]
-RESPOSTA FINAL: [...]
+## Format
+Use this template:
+PROBLEM: [...]
+SUB-PROBLEMS: [...]
+SOLUTIONS: [...]
+FINAL ANSWER: [...]
 ```
 
 ### Pattern 3: Few-Shot Learning
 
 ```txt
 # Prompt: classify_entities
-# Versão: 1.0
+# Version: 1.0
 
 ## System
-Você classifica entidades em categorias.
+You classify entities into categories.
 
-## Exemplos
-INPUT: "João mora em São Paulo"
+## Examples
+INPUT: "João lives in São Paulo"
 CLASSIFY: João (Person), São Paulo (Location)
 
-INPUT: "Apple lançou novo iPhone"
+INPUT: "Apple launched a new iPhone"
 CLASSIFY: Apple (Company), iPhone (Product)
 
-## Tarefa
-Classifique as entidades no seguinte texto:
+## Task
+Classify the entities in the following text:
 {user_text}
 
-## Formato
+## Format
 ENTITY: [entity] | CATEGORY: [category]
 ```
 
@@ -248,38 +248,38 @@ ENTITY: [entity] | CATEGORY: [category]
 
 ```txt
 # Prompt: creative_writing
-# Versão: 1.0
-# NOTA: Use temperature=0.8+ para melhores resultados
+# Version: 1.0
+# NOTE: Use temperature=0.8+ for better results
 
 ## System
-Você é um escritor criativo e imaginativo.
-Escreva de forma envolvente e original.
+You are a creative and imaginative writer.
+Write in an engaging, original style.
 
-[resto do prompt]
+[remaining prompt]
 ```
 
-## Boas Práticas
+## Best Practices
 
-✅ **Faça:**
-- Versionamento claro (semver)
-- Documentação de mudanças entre versões
-- Testes com múltiplos inputs
-- Variáveis bem nomeadas `{var_name}`
-- Exemplos nos prompts
-- Comentários explicativos
-- Manter histórico em Git
+✅ **Do:**
+- Use clear versioning (semver)
+- Document changes between versions
+- Test with multiple inputs
+- Use well-named variables `{var_name}`
+- Include examples in prompts
+- Add explanatory comments
+- Keep history in Git
 
-❌ **Evite:**
-- Prompts muito longos (>2000 chars)
-- Hardcoding de valores
-- Sem versionamento
-- Mudanças sem documentar
-- Nomes confusos de variáveis
-- Sem exemplos de uso
+❌ **Avoid:**
+- Prompts that are too long (>2000 chars)
+- Hardcoding values
+- No versioning
+- Changes without documentation
+- Confusing variable names
+- No usage examples
 
-## Otimização de Prompts
+## Prompt Optimization
 
-### 1. Teste Variações
+### 1. Test Variations
 
 ```python
 def benchmark_prompt(template, test_cases):
@@ -298,41 +298,41 @@ def benchmark_prompt(template, test_cases):
     return results
 ```
 
-### 2. Métricas de Qualidade
+### 2. Quality Metrics
 
 ```python
 def evaluate_output(output, criteria):
-    """Avaliar qualidade da saída"""
+    """Evaluate output quality"""
     score = 0
     
-    # Completude
+    # Completeness
     if len(output) > 50:
         score += 1
     
-    # Relevância
-    if any(word in output for word in ["importante", "significante"]):
+    # Relevance
+    if any(word in output for word in ["important", "significant"]):
         score += 1
     
-    # Clareza
+    # Clarity
     if output.count("?") < output.count("."):
         score += 1
     
     return score / 3  # 0-1
 ```
 
-### 3. Iteração Orientada por Dados
+### 3. Data-Driven Iteration
 
 ```python
-# Histórico de melhorias
+# Improvement history
 PROMPT_VERSIONS = {
     "1.0": "Baseline",
-    "1.1": "Adicionados exemplos (+10% qualidade)",
-    "1.2": "Melhorada instrução de output (+5% qualidade)",
-    "2.0": "Novo template com role-playing (+20% qualidade)"
+    "1.1": "Added examples (+10% quality)",
+    "1.2": "Improved output instruction (+5% quality)",
+    "2.0": "New role-playing template (+20% quality)"
 }
 ```
 
-## Integração com CI/CD
+## CI/CD Integration
 
 ```yaml
 # .github/workflows/test-prompts.yml
@@ -348,59 +348,59 @@ jobs:
         run: python tests/test_prompts.py
 ```
 
-## Migração Entre Versões
+## Version Migration
 
-Quando quiser mudar a versão padrão:
+When you want to change the default version:
 
 ```python
-# Versão antiga
+# Old version
 from src.core.chains.base_chain import load_prompt
-template = load_prompt("base_prompt")  # Carrega v1.0 automaticamente
+template = load_prompt("base_prompt")  # Loads v1.0 automatically
 
-# Versão nova
-template_v2 = load_prompt("base_prompt_v2")  # Carrega v2.0 explicitamente
+# New version
+template_v2 = load_prompt("base_prompt_v2")  # Loads v2.0 explicitly
 ```
 
-## Documentação de Mudanças
+## Change Documentation
 
-Mantenha um CHANGELOG:
+Keep a CHANGELOG:
 
 ```markdown
 # Changelog - Prompts
 
 ## [2.0.0] - 2024-04-16
 ### Changed
-- Novo template com role-playing mais forte
-- Melhorada instrução de output
-- Adicionados exemplos de edge cases
+- New prompt template with stronger role-playing
+- Improved output instruction
+- Added edge case examples
 
 ### Performance
-- +20% qualidade em testes internos
-- -5% latência (prompt mais conciso)
+- +20% quality in internal tests
+- -5% latency (more concise prompt)
 
 ## [1.1.0] - 2024-04-10
 ### Added
-- Exemplos de output esperado
-- Variável `tone` customizável
+- Expected output examples
+- Customizable `tone` variable
 
 ### Fixed
-- Corrigida instrução de formatação JSON
+- Fixed JSON formatting instruction
 ```
 
 ## Troubleshooting
 
-| Problema | Causa | Solução |
+| Problem | Cause | Fix |
 |----------|-------|---------|
-| Saída inconsistente | Prompt vago | Adicionar exemplos |
-| Modelo ignora instruções | Prompt muito longo | Simplificar ou priorizar |
-| Output em formato errado | Instruções claras | Adicionar formato explícito |
-| Performance ruim | Prompt genérico | Adicionar context/role |
+| Inconsistent output | Vague prompt | Add examples |
+| Model ignores instructions | Prompt too long | Simplify or prioritize |
+| Wrong output format | Unclear instructions | Add explicit format |
+| Poor performance | Generic prompt | Add context/role |
 
-## Próximos Passos
+## Next Steps
 
-- [ ] Criar banco de prompts testados
-- [ ] Implementar prompt versioning em BD
-- [ ] Setup de A/B testing automático
-- [ ] Criar dashboard de qualidade de prompts
-- [ ] Documentar melhores práticas por domínio
-- [ ] Integrar com observability/monitoring
+- [ ] Build a library of tested prompts
+- [ ] Implement prompt versioning in the database
+- [ ] Set up automatic A/B testing
+- [ ] Build a prompt quality dashboard
+- [ ] Document best practices by domain
+- [ ] Integrate with observability/monitoring

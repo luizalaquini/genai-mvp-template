@@ -1,6 +1,6 @@
 """
-Pipeline linear (sem loop autonomo).
-Use quando o fluxo for previsivel: prompt -> LLM -> resposta.
+Linear pipeline (no autonomous loop).
+Use when the flow is predictable: prompt -> LLM -> response.
 """
 from pathlib import Path
 
